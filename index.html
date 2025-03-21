@@ -89,24 +89,6 @@
         </a>
     </div>
     <script>
-        const fileInput = document.querySelector('input')
-        fileInput.addEventListener('change', (event) => {
-            const file = event.target.files[0]
-            // 生成
-            const reader = new FileReader()
-            reader.readAsDataURL(file)
-            reader.onload = () => {
-                const ael = document.createElement('a')
-
-                ael.href = 'https://img0.baidu.com/it/u=2826659474,1285397960&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=827'
-
-                ael.download = 'demo\\' + '233.jpg'
-
-                document.body.appendChild(ael)
-
-                ael.click()
-            }
-        })
     </script>
 </body>
 

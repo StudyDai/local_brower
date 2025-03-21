@@ -372,6 +372,7 @@ app.post('/getActivity', async function(req, res, next) {
             if (result.result.total > currentNum) {
                 // 继续
                 query.pageNo += 1
+                await delayFn()
                 await getData(url, data, query)
             }
         }
@@ -379,7 +380,7 @@ app.post('/getActivity', async function(req, res, next) {
     let resultData = []
     await getData(url, resultData, {
         "pageNo": 1,
-        "pageSize": 10
+        "pageSize": 40
     })
     if (resultData.length) {
             // 返回
@@ -439,6 +440,10 @@ app.get('/getFileName', async function(req, res, next) {
         statu: 200,
         data: goodSku + ' ' + warehouseName + ' ' + time + '.pdf'
     })
+})
+
+app.post('/formatListenerData', async function(req, res, next) {
+    console.log(req.body)
 })
 
 app.listen('8889',() => {
