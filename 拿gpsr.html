@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <input id="ipt" type="text" class="ipt" />
+    <button id="btn">生成</button>
+    <script>
+        var iptEl = document.getElementById('ipt')
+        var btn = document.getElementById('btn')
+        var a = document.createElement('a')
+        let saveName = ''
+        var xhr = new XMLHttpRequest()
+        btn.onclick = function() {
+            saveName = iptEl.value
+            // 请求
+            xhr.open('POST', 'http://192.168.188.47:8889/getDianxiaomiPDF')
+            xhr.setRequestHeader('content-type', 'application/json')
+            xhr.send(JSON.stringify({
+                saveName
+            }))
+        }
+        // 发送之后我这边监听下是什么情况
+        xhr.onreadystatechange = function() {
+            if (xhr.status === 200 && xhr.readyState === 4) {
+                let result = JSON.parse(xhr.responseText)
+                if (result.statu === 200) {
+                    a.href = result.data;
+                    a.download = saveName + '.pdf';  // 设置下载的文件名
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                }
+                return
+            }
+        }
+    </script>
+</body>
+
+</html>

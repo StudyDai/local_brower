@@ -1,7 +1,4 @@
 node_modules
-*.xls
-*.py
-*.xlsx
 *.ts
 *.spec
 /dist
