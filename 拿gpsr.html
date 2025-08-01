@@ -19,7 +19,7 @@
         btn.onclick = function() {
             saveName = iptEl.value
             // 请求
-            xhr.open('POST', 'http://192.168.188.47:8889/getDianxiaomiPDF')
+            xhr.open('POST', 'http://192.168.188.77:8889/getDianxiaomiPDF')
             xhr.setRequestHeader('content-type', 'application/json')
             xhr.send(JSON.stringify({
                 saveName

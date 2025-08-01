@@ -14,6 +14,206 @@ const options = {
     key: fs.readFileSync('./key/private-key.pem'),
     cert: fs.readFileSync('./key/certificate.pem')
 };
+var md5 = function (string) {
+  
+    function RotateLeft(lValue, iShiftBits) {
+        return (lValue<<iShiftBits) | (lValue>>>(32-iShiftBits));
+    }
+  
+    function AddUnsigned(lX,lY) {
+        var lX4,lY4,lX8,lY8,lResult;
+        lX8 = (lX & 0x80000000);
+        lY8 = (lY & 0x80000000);
+        lX4 = (lX & 0x40000000);
+        lY4 = (lY & 0x40000000);
+        lResult = (lX & 0x3FFFFFFF)+(lY & 0x3FFFFFFF);
+        if (lX4 & lY4) {
+            return (lResult ^ 0x80000000 ^ lX8 ^ lY8);
+        }
+        if (lX4 | lY4) {
+            if (lResult & 0x40000000) {
+                return (lResult ^ 0xC0000000 ^ lX8 ^ lY8);
+            } else {
+                return (lResult ^ 0x40000000 ^ lX8 ^ lY8);
+            }
+        } else {
+            return (lResult ^ lX8 ^ lY8);
+        }
+    }
+  
+    function F(x,y,z) { return (x & y) | ((~x) & z); }
+    function G(x,y,z) { return (x & z) | (y & (~z)); }
+    function H(x,y,z) { return (x ^ y ^ z); }
+    function I(x,y,z) { return (y ^ (x | (~z))); }
+  
+    function FF(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(F(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function GG(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(G(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function HH(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(H(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function II(a,b,c,d,x,s,ac) {
+        a = AddUnsigned(a, AddUnsigned(AddUnsigned(I(b, c, d), x), ac));
+        return AddUnsigned(RotateLeft(a, s), b);
+    };
+  
+    function ConvertToWordArray(string) {
+        var lWordCount;
+        var lMessageLength = string.length;
+        var lNumberOfWords_temp1=lMessageLength + 8;
+        var lNumberOfWords_temp2=(lNumberOfWords_temp1-(lNumberOfWords_temp1 % 64))/64;
+        var lNumberOfWords = (lNumberOfWords_temp2+1)*16;
+        var lWordArray=Array(lNumberOfWords-1);
+        var lBytePosition = 0;
+        var lByteCount = 0;
+        while ( lByteCount < lMessageLength ) {
+            lWordCount = (lByteCount-(lByteCount % 4))/4;
+            lBytePosition = (lByteCount % 4)*8;
+            lWordArray[lWordCount] = (lWordArray[lWordCount] | (string.charCodeAt(lByteCount)<<lBytePosition));
+            lByteCount++;
+        }
+        lWordCount = (lByteCount-(lByteCount % 4))/4;
+        lBytePosition = (lByteCount % 4)*8;
+        lWordArray[lWordCount] = lWordArray[lWordCount] | (0x80<<lBytePosition);
+        lWordArray[lNumberOfWords-2] = lMessageLength<<3;
+        lWordArray[lNumberOfWords-1] = lMessageLength>>>29;
+        return lWordArray;
+    };
+  
+    function WordToHex(lValue) {
+        var WordToHexValue="",WordToHexValue_temp="",lByte,lCount;
+        for (lCount = 0;lCount<=3;lCount++) {
+            lByte = (lValue>>>(lCount*8)) & 255;
+            WordToHexValue_temp = "0" + lByte.toString(16);
+            WordToHexValue = WordToHexValue + WordToHexValue_temp.substr(WordToHexValue_temp.length-2,2);
+        }
+        return WordToHexValue;
+    };
+  
+    function Utf8Encode(string) {
+        string = string.replace(/\r\n/g,"\n");
+        var utftext = "";
+  
+        for (var n = 0; n < string.length; n++) {
+  
+            var c = string.charCodeAt(n);
+  
+            if (c < 128) {
+                utftext += String.fromCharCode(c);
+            }
+            else if((c > 127) && (c < 2048)) {
+                utftext += String.fromCharCode((c >> 6) | 192);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+            else {
+                utftext += String.fromCharCode((c >> 12) | 224);
+                utftext += String.fromCharCode(((c >> 6) & 63) | 128);
+                utftext += String.fromCharCode((c & 63) | 128);
+            }
+  
+        }
+  
+        return utftext;
+    };
+  
+    var x=Array();
+    var k,AA,BB,CC,DD,a,b,c,d;
+    var S11=7, S12=12, S13=17, S14=22;
+    var S21=5, S22=9 , S23=14, S24=20;
+    var S31=4, S32=11, S33=16, S34=23;
+    var S41=6, S42=10, S43=15, S44=21;
+  
+    string = Utf8Encode(string);
+  
+    x = ConvertToWordArray(string);
+  
+    a = 0x67452301; b = 0xEFCDAB89; c = 0x98BADCFE; d = 0x10325476;
+  
+    for (k=0;k<x.length;k+=16) {
+        AA=a; BB=b; CC=c; DD=d;
+        a=FF(a,b,c,d,x[k+0], S11,0xD76AA478);
+        d=FF(d,a,b,c,x[k+1], S12,0xE8C7B756);
+        c=FF(c,d,a,b,x[k+2], S13,0x242070DB);
+        b=FF(b,c,d,a,x[k+3], S14,0xC1BDCEEE);
+        a=FF(a,b,c,d,x[k+4], S11,0xF57C0FAF);
+        d=FF(d,a,b,c,x[k+5], S12,0x4787C62A);
+        c=FF(c,d,a,b,x[k+6], S13,0xA8304613);
+        b=FF(b,c,d,a,x[k+7], S14,0xFD469501);
+        a=FF(a,b,c,d,x[k+8], S11,0x698098D8);
+        d=FF(d,a,b,c,x[k+9], S12,0x8B44F7AF);
+        c=FF(c,d,a,b,x[k+10],S13,0xFFFF5BB1);
+        b=FF(b,c,d,a,x[k+11],S14,0x895CD7BE);
+        a=FF(a,b,c,d,x[k+12],S11,0x6B901122);
+        d=FF(d,a,b,c,x[k+13],S12,0xFD987193);
+        c=FF(c,d,a,b,x[k+14],S13,0xA679438E);
+        b=FF(b,c,d,a,x[k+15],S14,0x49B40821);
+        a=GG(a,b,c,d,x[k+1], S21,0xF61E2562);
+        d=GG(d,a,b,c,x[k+6], S22,0xC040B340);
+        c=GG(c,d,a,b,x[k+11],S23,0x265E5A51);
+        b=GG(b,c,d,a,x[k+0], S24,0xE9B6C7AA);
+        a=GG(a,b,c,d,x[k+5], S21,0xD62F105D);
+        d=GG(d,a,b,c,x[k+10],S22,0x2441453);
+        c=GG(c,d,a,b,x[k+15],S23,0xD8A1E681);
+        b=GG(b,c,d,a,x[k+4], S24,0xE7D3FBC8);
+        a=GG(a,b,c,d,x[k+9], S21,0x21E1CDE6);
+        d=GG(d,a,b,c,x[k+14],S22,0xC33707D6);
+        c=GG(c,d,a,b,x[k+3], S23,0xF4D50D87);
+        b=GG(b,c,d,a,x[k+8], S24,0x455A14ED);
+        a=GG(a,b,c,d,x[k+13],S21,0xA9E3E905);
+        d=GG(d,a,b,c,x[k+2], S22,0xFCEFA3F8);
+        c=GG(c,d,a,b,x[k+7], S23,0x676F02D9);
+        b=GG(b,c,d,a,x[k+12],S24,0x8D2A4C8A);
+        a=HH(a,b,c,d,x[k+5], S31,0xFFFA3942);
+        d=HH(d,a,b,c,x[k+8], S32,0x8771F681);
+        c=HH(c,d,a,b,x[k+11],S33,0x6D9D6122);
+        b=HH(b,c,d,a,x[k+14],S34,0xFDE5380C);
+        a=HH(a,b,c,d,x[k+1], S31,0xA4BEEA44);
+        d=HH(d,a,b,c,x[k+4], S32,0x4BDECFA9);
+        c=HH(c,d,a,b,x[k+7], S33,0xF6BB4B60);
+        b=HH(b,c,d,a,x[k+10],S34,0xBEBFBC70);
+        a=HH(a,b,c,d,x[k+13],S31,0x289B7EC6);
+        d=HH(d,a,b,c,x[k+0], S32,0xEAA127FA);
+        c=HH(c,d,a,b,x[k+3], S33,0xD4EF3085);
+        b=HH(b,c,d,a,x[k+6], S34,0x4881D05);
+        a=HH(a,b,c,d,x[k+9], S31,0xD9D4D039);
+        d=HH(d,a,b,c,x[k+12],S32,0xE6DB99E5);
+        c=HH(c,d,a,b,x[k+15],S33,0x1FA27CF8);
+        b=HH(b,c,d,a,x[k+2], S34,0xC4AC5665);
+        a=II(a,b,c,d,x[k+0], S41,0xF4292244);
+        d=II(d,a,b,c,x[k+7], S42,0x432AFF97);
+        c=II(c,d,a,b,x[k+14],S43,0xAB9423A7);
+        b=II(b,c,d,a,x[k+5], S44,0xFC93A039);
+        a=II(a,b,c,d,x[k+12],S41,0x655B59C3);
+        d=II(d,a,b,c,x[k+3], S42,0x8F0CCC92);
+        c=II(c,d,a,b,x[k+10],S43,0xFFEFF47D);
+        b=II(b,c,d,a,x[k+1], S44,0x85845DD1);
+        a=II(a,b,c,d,x[k+8], S41,0x6FA87E4F);
+        d=II(d,a,b,c,x[k+15],S42,0xFE2CE6E0);
+        c=II(c,d,a,b,x[k+6], S43,0xA3014314);
+        b=II(b,c,d,a,x[k+13],S44,0x4E0811A1);
+        a=II(a,b,c,d,x[k+4], S41,0xF7537E82);
+        d=II(d,a,b,c,x[k+11],S42,0xBD3AF235);
+        c=II(c,d,a,b,x[k+2], S43,0x2AD7D2BB);
+        b=II(b,c,d,a,x[k+9], S44,0xEB86D391);
+        a=AddUnsigned(a,AA);
+        b=AddUnsigned(b,BB);
+        c=AddUnsigned(c,CC);
+        d=AddUnsigned(d,DD);
+    }
+  
+    var temp = WordToHex(a)+WordToHex(b)+WordToHex(c)+WordToHex(d);
+  
+    return temp.toLowerCase();
+}
 const httpsServer = https.createServer(options, app)
 function delayFn() {
     return new Promise((resolve, reject) => {
@@ -22,8 +222,10 @@ function delayFn() {
         }, 1500)
     })
 }
-app.use(express.static('uploads'))
 app.use(cors())
+app.use(express.static('uploads'))
+app.use('/avatar', express.static('avatar'))
+app.use('/prv', express.static(path.resolve(__dirname, '../')))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
 app.post('/posts',function(req, res, next) {
@@ -53,7 +255,29 @@ app.get('/get_ip',function(req, res, next) {
         })
     }
 })
-
+app.get('/del', async function(req, res, next) {
+    try {
+        // 检测文件在不在
+        // await fs.access(path.resolve(__dirname, '../物流运输表.xlsx'))
+        //删掉表
+        await fs.unlink(path.resolve(__dirname, '../物流运输表.xlsx'), (err) => {
+            console.log(' 我是问题', err)
+        })
+    } catch (err) {
+        console.log(err)
+        // 进来就是没删掉或者不存在
+        res.send({
+            statu: 201,
+            msg: '删除失败,或者文件不存在'
+        })
+        return
+    }
+    // 这个地方就是删除成功
+    res.send({
+        statu: 200,
+        msg: '删除成功'
+    })
+})
 const storage = multer.diskStorage({
     // 设置文件存储的目标目录
     destination: function (req, file, cb) {
@@ -140,9 +364,11 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     let url = 'https://www.dianxiaomi.com/dxmLabel/printPdf.json'
     var param = {
         'detailsData': [{
-            "ProductName": "ProductName: Manual Screwdriver Set",
+            // "ProductName": "ProductName: Manual Screwdriver Set",
+            // "ProductName": "ProductName: electric Screwdriver Set",
             // "ProductName": "ProductName: Children's Toy Drone",
-            // "ProductName": "ProductName: Card Holder",
+            "ProductName": "ProductName: Card Holder",
+            // "ProductName": "Bluetooth headset",
             "Model": "Model: " + saveName,
             "Manufacturer": "Manufacturer: Guangzhoushishouzhitoudianzishangwu Co., Ltd.",
             "Address": "Address: CN-B2-08, No. 81 Xinye Road, Haizhu District, Guangzhou (office only). Guangzhou, China",
@@ -159,7 +385,7 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
         body: JSON.stringify(param),
         headers: {
             'content-type': 'application/json',
-            'Cookie': 'MYJ_MKTG_fapsc5t4tc=JTdCJTdE; tfstk=ghQneZ9XGM-QHpWxpO8QDD1cTkrOJXTWpT3JeUpzbdJspv3daQ4leOHR9kTdrzvGFpKp8eKyZtCJL6C8F4cyI9uJvafSrQ5PFW98OlCCOUTzH-Buk61Cc65_kSneb7RJivP9YDvmDdTzH-UtXf-QpUWdDaTLI1J6w2oyTT-w_QAJzQRez5vwZIirLT8zs5AJG4JyTplwbIdXzLWyz5fwCQlAi4JczN_aQ4eOqORLCNdHxK5eL6Ch7P-SAOJi7V7GjEvqrd0rzNAF64dyDqqJ3i9pDd6aW2Yl_QXDi9DaIU5GRZxN8RglnOj2SCs_E0vc46If4hVU81YHKnb9XXok-gWCrHsnNS1w8OsXhHr_CCbdk3vXjAyF61vemgXLC4Jdm1WMDNHtkF5VjFjy1coqlJuWmJsmV0te1CvvM0fI8YsNoEVgsmZBYCOLH5ViV0te1CvYs5mjFHR69-C..; _dxm_ad_client_id=F9A19E33B010733177DE3FA9E7908D218; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1743149708,1743383215,1743576175,1744597212; HMACCOUNT=955D29CC551A0EB6; dxm_i=MTY2NTUwOCFhVDB4TmpZMU5UQTQhMWVhNjVjNzZjNDU2YjZmNzljOGJhOTM5NjM2NzRlODc; dxm_t=MTc0NDc4ODg2NyFkRDB4TnpRME56ZzRPRFkzIWQ1NWVmNWVkMGJjNzZiNTQzMmI1Y2UyOWI3ZmE4ZDRj; dxm_c=bmk2WFlkemQhWXoxdWFUWllXV1I2WkEhY2JmNDM1ZTFlMmRmNmM3YmM3NmMyMWU3Mjc0NjVmNDY; dxm_w=YjQxY2I2MmVjNjc2N2YyZTQxZjlkZjdhMmQxNjE1MTUhZHoxaU5ERmpZall5WldNMk56WTNaakpsTkRGbU9XUm1OMkV5WkRFMk1UVXhOUSE3ZGExZmNkNTc2Y2RhMDVmYWFhOTQ5ZjBlNDc4ZTk2MQ; dxm_s=StmwR3CXQFvEykhYLhb2_9GNF1zKRtkLY69ynDZxVoo; _clck=qzfyir%7C2%7Cfv6%7C0%7C1913; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwZDRmZmZjNy03YWJkLTQzYWItYjUyYy02NDg2MDdkOWU3NWElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjY1NTA4JTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc0NDk1OTc2OTQyOCUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0EyNCU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1744959770; _clsk=p6w1dg%7C1744959770378%7C1%7C0%7Cl.clarity.ms%2Fcollect; JSESSIONID=CA126220EBACA22784C32C06A8DB8128'
+            'Cookie': 'MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1746126985,1746494824,1746850845; tfstk=glSZURmmqlEaVhA9SMtqzXF5t7K9jnP5niOXntXDCCAifcGc8_CaBEif5n5VO18cfh61TsWVZN9XjN_23_6MosOfCAQdNTm1fPKj0hKvm7N7VuwOBnKmGsLKdcBhpLgmoyTgfQuyt7N7VkZmigg8NswVt4_eHBvmjcmgLevDemxDSdv3LKvjsqmGiJye3LpmIn0MxkvyUnAcin2ExBpDmdfDmjv1ItmeFF2b9C5TiWzeHQXMTmmred8i39gjXcFvIFOk-QoD3MJw7QXGfQ1CFpjCYUTIh7-hew1ML3rqxh8PS1JhpSoysa6JxBfm_W9dS1SHuMwYW9S2_UjM8xoRdnJciE7La09wfw8PbNextOfW_axOhYP1LU7eypYn3Vx1PTsvrGqZwBTJ3_JP_fSPPjpnG-SA7j02SppeNJyFFAatP0sr4bgxkexJLQw6Cq3vSppeNJyEkqLH9pR7Cd1..; HMACCOUNT=955D29CC551A0EB6; _clck=qzfyir%7C2%7Cfw2%7C0%7C1913; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc0NzcyNDkzNSFkRDB4TnpRM056STBPVE0xIThjNjY5MTRiYzBlNDkzZjZlNGRlNjM5MGM5ODI2YTlh; dxm_c=WGE2cWpjYTIhWXoxWVlUWnhhbU5oTWchZDJkMzY3NDkwMTViYWNhOGNiOTlhMjdhOTE4YjI3ZDc; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=5V5FW5B4_nytS341aTodwzHuTXIcZc2Fcl-efcg3IxI; _dxm_ad_client_id=9BDC465FBF19965E9B969BBEF342D0ED3; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1747729731; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwZDRmZmZjNy03YWJkLTQzYWItYjUyYy02NDg2MDdkOWU3NWElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc0NzcyOTczMDk5NiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E1NSU3RA==; _clsk=1uh267x%7C1747729732231%7C1%7C0%7Cj.clarity.ms%2Fcollect; JSESSIONID=4D315B7BBFE26A2433EDD02BB81A293D'
         }
     }).then(res => res.json())
     if (!result.code) {
@@ -171,9 +397,48 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     }
 })
 
+app.get('/exist', async (req, res, next) => {
+    try {
+        fs.accessSync(path.resolve(__dirname, '../物流运输表.xlsx'))
+    } catch(err) {
+        console.log(err)
+        return res.send({
+            statu: 201,
+            msg: '文件不存在'
+        })
+    }
+    res.send({
+        statu: 200,
+        msg: '文件存在'
+    })
+})
+
+app.post('/translate', async (req, res, next) => {
+    const message = req.body.message.replace(/\(.*\)/ig, '')
+    // 这个地方要翻译一次
+    var appid = '20250605002374585';
+    var key = 'fsr5px4yWEaneNGTyThC';
+    var salt = (new Date).getTime();
+    var query = message;
+    var from = 'en'; // 英语
+    var to = 'zh'; // 中文
+    var str1 = appid + query + salt +key;
+    var sign = md5(str1);
+    const data = await fetch(`http://api.fanyi.baidu.com/api/trans/vip/translate?q=${query}&appid=${appid}&salt=${salt}&from=${from}&to=${to}&sign=${sign}`, {
+        method: 'get',
+        headers: {
+            'content-type': 'application/x-www-form-urlencoded'
+        }
+    }).then(res => res.json())
+    console.log(data,'233')
+    if (data.trans_result.length) {
+        res.send(data.trans_result[0].dst)
+    }
+})
+
 
 app.post('/getGoodList', async function(req, res, next) {
-    const { cookie, mallid, skc_item } = req.body
+    const { cookie, mallid, sku_item } = req.body
     const myHeader = new Headers()
     myHeader.append('Content-Type', 'application/json')
     myHeader.append('cookie', cookie)
@@ -197,10 +462,13 @@ app.post('/getGoodList', async function(req, res, next) {
             }
         }
     }
-    if (cookie && mallid && skc_item) {
+    if (cookie && mallid && sku_item) {
+        // 每次进来先随机等待个1-3秒
+        let rand = Math.floor(Math.random() * 3) + 1
+        await delayFn(rand * 1000)
         let resultList = []
         await delayFn()
-        await getAllList('https://seller.kuajingmaihuo.com/bg-visage-mms/product/skc/pageQuery', {page: 1, pageSize: 500, productSkcIds:[skc_item]}, resultList)
+        await getAllList('https://seller.kuajingmaihuo.com/bg-visage-mms/product/skc/pageQuery', {page: 1, pageSize: 500, productSkuIds:[sku_item]}, resultList)
         // 返回给用户
         res.send({
             statu: 200,
