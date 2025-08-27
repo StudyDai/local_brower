@@ -5,6 +5,225 @@ const path = require('path')
 const multer = require('multer')
 const cors = require('cors');
 const xlsx = require('xlsx')
+const { exec, spawn } = require('child_process');
+const tesseract = require('tesseract.js')
+// 这个地方调用下xlsx吧
+let xlData = [['操作参数(1点击,2双击,3滚动,4复制,5粘贴,6长按, 7等待, 8自定义, 9移动， 10自定义鼠标操作', '时长/滚动距离', '操作的图片路径']]
+// 循环
+let aliexpress = [
+    "8203414160182153",
+    "3059067139304734",
+    "3059179540024481",
+    "3059299873636089",
+    "3059536556169664",
+    "8204054069859192",
+    "3059492384518757",
+    "3058974727382382",
+    "8203982928455279",
+    "8203360253758135",
+    "8204391997522015",
+    "8204214934076782",
+    "8204046548928465",
+    "8203395449645728",
+    "8203395287362305",
+    "3059036016106830",
+    "8204037906438710",
+    "8203971720255778",
+    "8203599954139751",
+    "8203453308491863",
+    "8203451867431705",
+    "8204375834150661",
+    "8203966768430062",
+    "8204196617896761",
+    "3059491270244257",
+    "8203960127197305",
+    "8203335297035680",
+    "8203334977287728",
+    "8203376322246530",
+    "8204364070408336",
+    "8203953722603600",
+    "3059004333898209",
+    "3058930885441515",
+    "8203322652662528",
+    "8204012868319732",
+    "3058998811383089",
+    "3058997936917885",
+    "3058927600649538",
+    "8204176537545251",
+    "8203361046801810",
+    "8203424108053102",
+    "8203314812243768",
+    "3059423262570429",
+    "8203312978256536",
+    "8203312655771729",
+    "8204167812435641",
+    "8203306975876696",
+    "8203996381993021",
+    "8204338636452933",
+    "8204338152774329",
+    "8204336233314460",
+    "8203551314613775",
+    "8203550196311139",
+    "8204155895753657",
+    "8204330476367899",
+    "8204155333197306",
+    "8204325918789466",
+    "3059207175726246",
+    "8203400265559227",
+    "8203912840642544",
+    "8203399781077043",
+    "8203395783480296",
+    "8203284891208710",
+    "3058931292378668",
+    "8203276895674168",
+    "8203275934137306",
+    "8203965741103539",
+    "8203315765087994",
+    "8203892525084271",
+    "8204130452524310",
+    "8204295439615069",
+    "8203374347468793",
+    "8203372261050038",
+    "8204120059603202",
+    "8203882521383202",
+    "8203948946688689",
+    "8203508513224135",
+    "8203949023963171",
+    "8203366349671733",
+    "8203297448798794",
+    "3059353750494745",
+    "8203247777823106",
+    "8204106933520423",
+    "3059106833160437",
+    "8203931425603085",
+    "8204270474147370",
+    "8203487232282544",
+    "8203230819309928",
+    "8203925660951532",
+    "8204094773534767",
+    "8204094773164767",
+    "3058851297153838",
+    "8204092373516113",
+    "8203227057727595",
+    "8204090692727349",
+    "3058948500690603",
+    "8203219295237297",
+    "3059070676591438",
+    "8204083011974452",
+    "3059259990004773",
+    "8204246317755292",
+    "8203902868497467",
+    "8203902462625016",
+    "8204232550023633",
+    "8204060132196553",
+    "8203820844248667",
+    "8203884940810790",
+    "3058949249177433",
+    "3058778496599511",
+    "8203234723653911",
+    "3059030219830406",
+    "8203873980195825",
+    "8203217526764759",
+    "8203164498426037",
+    "8204031890906037",
+    "8203790762897870",
+    "3059000694025103",
+    "8203158736408301",
+    "8203780684045906",
+    "8203200247646098",
+    "8203200247516098",
+    "8203844943707089",
+    "3058648403036853",
+    "8203262348335497",
+    "3058940192934027",
+    "8203194405170916",
+    "8203261224733634",
+    "8203193761415950",
+    "8204177277889214",
+    "8203141691609794",
+    "8203767728294777",
+    "8203830941471265",
+    "8203763560227276",
+    "8203828702621809",
+    "8204002216526798",
+    "3059163357176182",
+    "3058615207991973",
+    "8203242347722546",
+    "3059112865483573",
+    "3059146870086902",
+    "8203239144449359",
+    "3058917014240603",
+    "8203747323364303",
+    "8203380434437874",
+    "8203988292567243",
+    "8203985973731405",
+    "8203743242351387",
+    "8203802062991293",
+    "8204142873244498",
+    "3059082940094849",
+    "8203732121769219",
+    "3058631299772635",
+    "3058789721966957",
+    "8203712685369716",
+    "8203344917116005",
+    "8203192983800800",
+    "8203339798921926",
+    "8203339158152479",
+    "8203064412328815",
+    "8204095438216988",
+    "8204095752291859",
+    "8203902456899567",
+    "8204072316503614",
+    "8203887413496750",
+    "8204054479056597",
+    "8203881335078587",
+    "1114989756696716",
+    "3058728937249262",
+    "8203612284574887",
+    "8203678949685102",
+    "8203591403155639",
+    "8203580844408607",
+    "8202998728207611",
+    "8203961117274517",
+    "8203610225240597",
+    "3058766380068079",
+    "8202911852532671",
+    "8203178035926987",
+    "8203176910855033",
+    "8203522361916506",
+    "8202989867776276",
+    "8203731578119066",
+    "8202981223658071",
+    "8203475247361930",
+    "8203118190610231",
+    "8203845191325367",
+    "1114824464464918"
+]
+aliexpress.forEach(item => {
+    // 包装
+    xlData.push([1,'','./auto_aliexpress/input.jpg'])
+    xlData.push([7,'1',''])
+    xlData.push([4,item,''])
+    xlData.push([5,'',''])
+    xlData.push([7,2,''])
+    xlData.push([1,'','./auto_aliexpress/code.jpg'])
+    xlData.push([7,2,''])
+    xlData.push([9, '1 -100', ''])
+    xlData.push([7,1,''])
+    xlData.push([1,'','./auto_aliexpress/text.jpg'])
+    xlData.push([4,'你好，亲爱的顾客，如果后续对订单有任何的问题，请及时告知我们，我们来为您提供合理的解决方案，祝您生活愉快，期待您的下次购物',''])
+    xlData.push([5,'',''])
+    xlData.push([7,3,''])
+    xlData.push([1,'','./auto_aliexpress/send.jpg'])
+    xlData.push([7,2,''])
+})
+// 导出
+let ali_wb = xlsx.utils.book_new()
+let ali_ws = xlsx.utils.aoa_to_sheet(xlData)
+// 添加
+xlsx.utils.book_append_sheet(ali_wb, ali_ws, 'sheet')
+// 导出
+xlsx.writeFile(ali_wb, path.resolve(__dirname, './aliexpress_msg.xlsx'))
 const https = require('https')
 let current_ip = '192.168.188.79'
 let warehouseName = 'TX'
@@ -241,6 +460,21 @@ app.post('/posts',function(req, res, next) {
         data: req.body.ip
     })
 })
+app.post('/getCode', async function(req, res, next) {
+    let result = req.body
+    console.log('来了', result)
+    const worker = await tesseract.createWorker('eng');
+    const ret = await worker.recognize(result.data, 'eng');
+    console.log(ret.data.text);
+    await worker.terminate();
+    if (ret.data.text.length) {
+        res.send({
+            code: 200,
+            msg: ret.data.text
+        })
+    }
+    // 关闭识别
+})
 app.get('/get_ip',function(req, res, next) {
     if(current_ip.trim()) {
         res.send({
@@ -364,10 +598,10 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     let url = 'https://www.dianxiaomi.com/dxmLabel/printPdf.json'
     var param = {
         'detailsData': [{
-            // "ProductName": "ProductName: Manual Screwdriver Set",
+            "ProductName": "ProductName: Manual Screwdriver Set",
             // "ProductName": "ProductName: electric Screwdriver Set",
             // "ProductName": "ProductName: Children's Toy Drone",
-            "ProductName": "ProductName: Card Holder",
+            // "ProductName": "ProductName: Card Holder",
             // "ProductName": "Bluetooth headset",
             "Model": "Model: " + saveName,
             "Manufacturer": "Manufacturer: Guangzhoushishouzhitoudianzishangwu Co., Ltd.",
@@ -414,7 +648,7 @@ app.get('/exist', async (req, res, next) => {
 })
 
 app.post('/translate', async (req, res, next) => {
-    const message = req.body.message.replace(/\(.*\)/ig, '')
+    const message = req.body.message.replace(/\(.*\)/ig, '').replace(/<[a-z]*.+>/ig, '')
     // 这个地方要翻译一次
     var appid = '20250605002374585';
     var key = 'fsr5px4yWEaneNGTyThC';
@@ -436,6 +670,26 @@ app.post('/translate', async (req, res, next) => {
     }
 })
 
+app.get('/callUser', async (req, res, next) => {
+    // 2. 启动 Python 子进程（关键：开启 stdio 通信，确保能发送输入）
+    const pythonProcess = spawn('python', ['main_project.py']);
+    // 监听标准输出
+    pythonProcess.stdout.on('data', (data) => {
+        console.log(`标准输出:\n${data}`);
+        if (data.includes('True')) {
+            const input1 = '1\n';
+            pythonProcess.stdin.write(input1)
+            console.log(`Node 已发送输入：${input1.trim()}`);
+            res.send({
+                code: 200,
+                msg: 'call成功了哈'
+            })
+        }
+    });
+    pythonProcess.on('close', (code) => {
+        console.log(`Python 脚本执行结束，退出码：${code}`);
+    });
+})
 
 app.post('/getGoodList', async function(req, res, next) {
     const { cookie, mallid, sku_item } = req.body
@@ -468,7 +722,7 @@ app.post('/getGoodList', async function(req, res, next) {
         await delayFn(rand * 1000)
         let resultList = []
         await delayFn()
-        await getAllList('https://seller.kuajingmaihuo.com/bg-visage-mms/product/skc/pageQuery', {page: 1, pageSize: 500, productSkuIds:[sku_item]}, resultList)
+        await getAllList('https://agentseller.temu.com/visage-agent-seller/product/skc/pageQuery', {page: 1, pageSize: 500, productSkuIds:[sku_item]}, resultList)
         // 返回给用户
         res.send({
             statu: 200,
@@ -476,7 +730,7 @@ app.post('/getGoodList', async function(req, res, next) {
         })
     } else if (cookie && mallid) {
         let resultList = []
-        await getAllList('https://seller.kuajingmaihuo.com/bg-visage-mms/product/skc/pageQuery', {page: 1, pageSize: 500}, resultList)
+        await getAllList('https://agentseller.temu.com/visage-agent-seller/product/skc/pageQuery', {page: 1, pageSize: 300}, resultList)
         // 返回给用户
         res.send({
             statu: 200,
@@ -739,7 +993,7 @@ app.post('/getActivity', async function(req, res, next) {
 })
 
 // 这边去拿销量
-// app.post
+
 
 
 app.post('/getSize', async function(req, res, next) {
