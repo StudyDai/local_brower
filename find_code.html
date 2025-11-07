@@ -1,138 +1,22 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>邮编分区查询</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f4f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background-color: #fff;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-        }
-
-        input[type="text"] {
-            width: calc(100% - 20px);
-            padding: 10px;
-            margin-bottom: 20px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            font-size: 16px;
-        }
-
-        button {
-            background-color: #007BFF;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        #pauseButton {
-            background-color: green;
-            margin-left: 15px;
-        }
-        #result {
-            margin-top: 20px;
-            padding: 20px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            background-color: #f9f9f9;
-            min-height: 50px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-        }
-
-        #result div {
-            margin: 5px 0;
-        }
-
-        #result .region {
-            color: #007BFF;
-            font-weight: bold;
-        }
-
-        #result .amount {
-            color: #28a745;
-            font-weight: bold;
-        }
-
-        #error {
-            margin-top: 10px;
-            color: #dc3545;
-            font-weight: bold;
-        }
-    </style>
-</head>
-
-<body>
-    <div class="container">
-        <h1>美国邮编分区查询</h1>
-        <input type="text" id="zipCodeInput" placeholder="请输入邮编" autocomplete="off">
-        <button id="submitButton">查询</button>
-        <button id="pauseButton">粘贴</button>
-        <div id="result"></div>
-        <div id="error"></div>
-    </div>
-    <script>
-
-        const submitButton = document.getElementById('submitButton');
-        const zipCodeInput = document.getElementById('zipCodeInput');
-        const resultDiv = document.getElementById('result');
-        const errorDiv = document.getElementById('error');
-        const pauseButton = document.getElementById('pauseButton')
-
-        submitButton.addEventListener('click', async function () {
-            const zipCode = zipCodeInput.value;
-            // 这个地方要发请求哦
-            const url = 'http://localhost:8800/getPrice/' + zipCode
-            const Result = await fetch(url).then(res => res.json())
-            console.log(Result)
-            if (Result.statu === 200) {
-                // 证明查到了,可以更换出去了
-                resultDiv.innerHTML = `
-                    <div class="warehouse">仓库代号: ${Result.sendWarehouse}</div>
-                    <div class="warePrice">最优运费: ${Result.goodPirce}${Result.unit }</div>
-                `
-            }
-        });
-
-        pauseButton.addEventListener('click', async function() {
-            // 粘贴看看是什么东西先
-            zipCodeInput.value = await navigator.clipboard.readText()
-        })
-    </script>
-</body>
-
-</html>
+  <meta charset="UTF-8">
+  <title>请求数据按钮</title>
+  <style>
+    /* 基础重置 */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Microsoft YaHei", sans-serif;
+    }
     
+  </style>
+</head>
+<body>
+  <!-- 用表单包裹：点击按钮触发提交，实现加载状态切换（无需JS） -->
+    <!-- 隐藏输入框：用于触发表单valid状态（必须有一个可提交的输入项） -->    
+    
+</body>
+</html>

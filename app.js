@@ -4,9 +4,14 @@ const fs = require('fs');
 const path = require('path')
 const multer = require('multer')
 const cors = require('cors');
-const xlsx = require('xlsx')
+const xlsx = require('xlsx');
+const sharp = require('sharp');
 const { exec, spawn } = require('child_process');
-const tesseract = require('tesseract.js')
+const { Window } = require("node-screenshots");
+let windows = Window.all();
+const tesseract = require('tesseract.js');
+const serveIndex = require('serve-index');
+const { pdfToPng } = require('pdf-to-png-converter');
 // 这个地方调用下xlsx吧
 let xlData = [['操作参数(1点击,2双击,3滚动,4复制,5粘贴,6长按, 7等待, 8自定义, 9移动， 10自定义鼠标操作', '时长/滚动距离', '操作的图片路径']]
 // 循环
@@ -442,11 +447,94 @@ function delayFn() {
     })
 }
 app.use(cors())
+// 保存的当前速卖通订单的信息
+let aliexpressData = []
+async function readPdf() {
+    // 开始读取文件
+    let file_p = path.resolve(__dirname, 'aliexpress/平台物流订单.xlsx')
+    fs.readFile(file_p, async (err, data) => {
+        if (err) {
+            console.log('err', err)
+            return
+        }
+        const read_data = xlsx.read(data, { type: 'buffer' })
+        // 获取文件名称
+        const filename = read_data.SheetNames[0]
+        // 获取第一个工作表数据
+        const worksheet = read_data.Sheets[filename]
+        // 转化json格式
+        const jsondata = xlsx.utils.sheet_to_json(worksheet)
+        console.log(jsondata,'233')
+        aliexpressData = jsondata
+        for (let index = 0; index < jsondata.length; index++) {
+            const element = jsondata[index];
+            // 保存起来先
+            let p = path.resolve(__dirname, `aliexpress/01/${element['编号']}.pdf`)
+            // pdf转图片
+            const images = await pdfToPng(p, {
+            pagesToProcess: [1], // 只处理第一页
+            outputFolder: './temp' // 临时图片存储目录
+            });
+            // 2. OCR识别图片中的文字（语言设为英文，因运单是英文）
+            const { data: { text } } = await tesseract.recognize(
+                images[0].path, // 图片路径
+                'eng' // 识别语言（支持'chi_sim'简体中文等）
+            );
+            let number_reg = /U([a-bA-Z0-9]+\d)/ig
+            let value = text.match(number_reg)?.[0]
+            if (value) {
+                // 后四位去对应我的数据,然后去改名字
+                let item = aliexpressData.find(data => data['运单号'].includes(value.slice(-4)))
+                console.log(aliexpressData[2]['运单号'], value)
+                if (item) {
+                    console.log('我找到了', item)
+                    // 重命名
+                    try {
+                        let new_p = path.resolve(__dirname, `aliexpress/01/${item['编号']}-${item['仓库']}-${item['运单号'].replace('运单号: ', '')}.pdf`)
+                        fs.renameSync(p, new_p);
+                        console.log('重命名成功')
+                    } catch (err) {
+                        console.log('重命名失败', err)
+                    }
+                }
+            } else {
+                // 这就是匹配不到的,得把图片给出去,然后收新图片 这个地方暂时不搞先 就是先把UU的发完 然后再发另一个的
+            }
+        }
+    })
+}
+// app.use('/', serveIndex(path.resolve(__dirname, 'uploads'), {
+//     'icons': true,
+//     'view': 'details'
+// }))
 app.use(express.static('uploads'))
 app.use('/avatar', express.static('avatar'))
 app.use('/prv', express.static(path.resolve(__dirname, '../')))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+app.get('/getPic', function(req, res, next) {
+    // windows.forEach((item) => {
+    //     console.log({
+    //       id: item.id,
+    //       x: item.x,
+    //       y: item.y,
+    //       width: item.width,
+    //       height: item.height,
+    //       rotation: item.rotation,
+    //       scaleFactor: item.scaleFactor,
+    //       isPrimary: item.isPrimary,
+    //     });
+      
+    //     let image = item.captureImageSync();
+    //     fs.writeFileSync(`${item.id}.mp4`, image.toBmpSync());
+      
+    //     item.captureImage().then(async (data) => {
+    //       console.log(data);
+    //       let newImage = await data.crop(10, 10, 10, 10);
+    //       fs.writeFileSync(`${item.id}.png`, await newImage.toPng());
+    //     });
+    //   });
+})
 app.post('/posts',function(req, res, next) {
     console.log('今天的时间是: ' + new Date() + req.body.ip);
     currentTime = new Date().getTime();
@@ -598,7 +686,13 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     let url = 'https://www.dianxiaomi.com/dxmLabel/printPdf.json'
     var param = {
         'detailsData': [{
-            "ProductName": "ProductName: Manual Screwdriver Set",
+            // "ProductName": "headlamp",
+            // "ProductName": "ultrasonic cutter",
+            // "ProductName": "juice cup",
+            "ProductName": "Light board",
+            // "ProductName": "ProductName: Manual Screwdriver Set",
+            // "ProductName": "Electric Wine Opener",
+            // "ProductName": "Blade Set",
             // "ProductName": "ProductName: electric Screwdriver Set",
             // "ProductName": "ProductName: Children's Toy Drone",
             // "ProductName": "ProductName: Card Holder",
@@ -606,7 +700,7 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
             "Model": "Model: " + saveName,
             "Manufacturer": "Manufacturer: Guangzhoushishouzhitoudianzishangwu Co., Ltd.",
             "Address": "Address: CN-B2-08, No. 81 Xinye Road, Haizhu District, Guangzhou (office only). Guangzhou, China",
-            "Representative": "EU ResponsiblePerson: SUCCESS COURIER SL\nEU RepresentativeAddress: ES-CALLE RIO TORMES NUM. 1, PLANTA 1, DERECHA, OFICINA 3, Fuenlabrada, Madrid, 28947 Spain\nTel: 34-910602659\nE-mail: successservice2@hotmail.com",
+            "Representative": "EU ResponsiblePerson: Linc Cong\nEU RepresentativeAddress: c/o HQ Westendfair Business Centre,Friedrich-Ebert-Anlage 36,Frankfurt,Germany\nTel: 49-030800982701\nE-mail: eurep@wincomply.com",
             "userDefaultText1": "IWAN7299@163.com",
             "userDefaultText2": "Made In China"
         }],
@@ -629,6 +723,22 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
             data: result.data
         })
     }
+})
+
+app.post('/saveXlsx', async (req, res ,next) => {
+    const wb = xlsx.utils.book_new()
+    // 转化
+    const ws = xlsx.utils.aoa_to_sheet(req.body)
+    // 添加
+    xlsx.utils.book_append_sheet(wb, ws, '订单信息')
+    // 导出
+    xlsx.writeFile(wb, path.resolve(__dirname, 'aliexpress/平台物流订单.xlsx'))
+    await readPdf()
+    res.send({
+        code: 200,
+        data: '233'
+    })
+    // 来啦
 })
 
 app.get('/exist', async (req, res, next) => {
@@ -1047,3 +1157,4 @@ app.post('/formatListenerData', async function(req, res, next) {
 app.listen('8889',() => {
     console.log('Server is running on port 8889');
 })
+

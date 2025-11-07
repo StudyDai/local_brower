@@ -5,12 +5,71 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <style>
+        body {
+            background-color: gray;
+        }
+        .container {
+            position: relative;
+            width: 400px;
+            height: 100px;
+            padding: 10px 15px;
+            background-color: rgba(206, 206, 243, 1);
+            border-radius: 15px;
+        }
+        .container .boat {
+            position: absolute;
+            top: 0;
+            left: 5px;
+            width: 25%;
+            height: 60px;
+            background-color: gray;
+            clip-path: ellipse(42% 50% at 50% 0%);
+            transition: transform linear .3s;
+        }
+        .child {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(206, 206, 243, 1);
+            cursor: pointer;
+            transition: transform ease-in-out .3s;
+            border-radius: 50%;
+        }
+        .child.active {
+            transform: translateY(-90px);
+        }
+    </style>
 </head>
 
 <body>
     <input id="ipt" type="text" class="ipt" />
     <button id="btn">生成</button>
+    <canvas width="500" height="500"></canvas>
+    <div class="container">
+        <div class="boat" style="z-index: 0;"></div>
+        <div class="select" style="display: flex; justify-content: center; align-items: center; position: relative; z-index: 1; left: -8px;">
+            <div class="child active" style="width: 25%; margin: 0 5px; text-align: center; color: red;">1</div>
+            <div class="child" style="width: 25%; margin: 0 5px; text-align: center; color: red;">2</div>
+            <div class="child" style="width: 25%; margin: 0 5px; text-align: center; color: red;">3</div>
+            <div class="child" style="width: 25%; margin: 0 5px; text-align: center; color: red;">4</div>
+        </div>
+    </div>
     <script>
+        var childs = document.querySelectorAll('.child')
+        var boat = document.querySelector('.boat')
+        childs.forEach((c, i) => {
+            c.onclick = function() {
+                let active = document.querySelector('.child.active')
+                active && active.classList.toggle('active')
+                boat.style.transform = `translateX(${i * 100}px)`
+                this.classList.add('active')
+            }
+        })
+
+
+
+
+        
         var iptEl = document.getElementById('ipt')
         var btn = document.getElementById('btn')
         var a = document.createElement('a')
@@ -39,6 +98,13 @@
                 return
             }
         }
+
+        let canvasEl = document.querySelector('canvas')
+        const ctx = canvasEl.getContext('2d')
+        ctx.beginPath()
+        // 弧度和角度的关系就是 1度等于 π / 180 那么要从0 到 90度 则是 0 到 π / 2
+        ctx.arc(50,50,50,0,Math.PI / 2, false)
+        ctx.stroke()
     </script>
 </body>
 
