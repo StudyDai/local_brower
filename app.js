@@ -509,6 +509,8 @@ async function readPdf() {
 // }))
 app.use(express.static('uploads'))
 app.use('/avatar', express.static('avatar'))
+app.use('/temu', express.static('temu'))
+app.use('/tiktok', express.static('tiktok'))
 app.use('/prv', express.static(path.resolve(__dirname, '../')))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
@@ -687,9 +689,9 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     var param = {
         'detailsData': [{
             // "ProductName": "headlamp",
-            // "ProductName": "ultrasonic cutter",
+            "ProductName": "ultrasonic cutter",
             // "ProductName": "juice cup",
-            "ProductName": "Light board",
+            // "ProductName": "Light board",
             // "ProductName": "ProductName: Manual Screwdriver Set",
             // "ProductName": "Electric Wine Opener",
             // "ProductName": "Blade Set",
@@ -726,17 +728,35 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
 })
 
 app.post('/saveXlsx', async (req, res ,next) => {
+    console.log(req.body)
+    const wb = xlsx.utils.book_new()
+    // 转化
+    const ws = xlsx.utils.aoa_to_sheet(JSON.parse(req.body.data))
+    // 添加
+    xlsx.utils.book_append_sheet(wb, ws, 'TEMU一周数据表')
+    // 导出
+    xlsx.writeFile(wb, path.resolve(__dirname, 'temu/' + req.body.mallid + '.xlsx'))
+    // await readPdf()
+    res.send({
+        code: 200,
+        data: 'http://192.168.188.77:8889/temu/' + req.body.mallid + '.xlsx'
+    })
+    // 来啦
+})
+
+app.post('/saveXlsx_tk', async (req, res ,next) => {
+    let date = new Date().getTime()
+    console.log(req.body)
     const wb = xlsx.utils.book_new()
     // 转化
     const ws = xlsx.utils.aoa_to_sheet(req.body)
     // 添加
-    xlsx.utils.book_append_sheet(wb, ws, '订单信息')
+    xlsx.utils.book_append_sheet(wb, ws, 'tiktok一周数据表')
     // 导出
-    xlsx.writeFile(wb, path.resolve(__dirname, 'aliexpress/平台物流订单.xlsx'))
-    await readPdf()
+    xlsx.writeFile(wb, path.resolve(__dirname, 'tiktok/' + date + '.xlsx'))
     res.send({
         code: 200,
-        data: '233'
+        data: 'http://192.168.188.77:8889/tiktok/' + date + '.xlsx'
     })
     // 来啦
 })
