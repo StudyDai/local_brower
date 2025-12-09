@@ -55,4 +55,23 @@
     <div class="box1 box"></div>
     <div class="box2 box"></div>
 </body>
+<script>
+  const getObjProxy = async (obj) => {
+    const proxy = new Proxy(obj, {
+      get(target, key) {
+        // 这里会打印吗、会打印什么
+        console.log('get-233', key)
+        return Reflect.get(target, key)
+      },
+    })
+
+    return proxy
+  }
+
+  // 当调用fn时，会触发get方法吗，
+  const fn = async () => {
+    const objProxy = await getObjProxy({})
+  }
+  fn()
+</script>
 </html>

@@ -778,13 +778,14 @@ app.get('/exist', async (req, res, next) => {
 })
 
 app.post('/translate', async (req, res, next) => {
-    const message = req.body.message.replace(/\(.*\)/ig, '').replace(/<[a-z]*.+>/ig, '')
+    // const message = req.body.message.replace(/\(.*\)/ig, '').replace(/<[a-z]*.+>/ig, '')
+    const message = req.body.msg
     // 这个地方要翻译一次
     var appid = '20250605002374585';
     var key = 'fsr5px4yWEaneNGTyThC';
     var salt = (new Date).getTime();
     var query = message;
-    var from = 'en'; // 英语
+    var from = 'auto'; // 英语
     var to = 'zh'; // 中文
     var str1 = appid + query + salt +key;
     var sign = md5(str1);
@@ -794,9 +795,11 @@ app.post('/translate', async (req, res, next) => {
             'content-type': 'application/x-www-form-urlencoded'
         }
     }).then(res => res.json())
-    console.log(data,'233')
     if (data.trans_result.length) {
-        res.send(data.trans_result[0].dst)
+        res.send({
+            code: 200,
+            data: data.trans_result[0].dst
+        })
     }
 })
 
