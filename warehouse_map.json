@@ -1,0 +1,2422 @@
+[
+    {
+        "oms_sku": "WO-11-78964297771",
+        "oms_name_en": "XGGJ23110201 180白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []    
+    },
+    {
+        "oms_sku": "WO-14-23443179476",
+        "oms_name_en": "MT-Ele68in-1 电动68",
+        "custom_name": "MT-Ele68in-1",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-18-14751490551",
+        "oms_name_en": "XB@-L6-12L L6智能垃圾桶三模电池款白色12L",
+        "custom_name": "XB@-L6-12L",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-19-95419036841",
+        "oms_name_en": "XB@-L6-14L L6智能垃圾桶三模电池款白色14L",
+        "custom_name": "XB@-L6-14L",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-22-42302401341",
+        "oms_name_en": "MT-S1-Grey S1加特林灰色",
+        "custom_name": "MT-S1-Grey",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-25-88269178024",
+        "oms_name_en": "GHUS-KH002-A2-Black 三折磁吸侧推铝盒包（修面黑）",
+        "custom_name": "GHUS-KH002-A2-Black",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-26-83044688821",
+        "oms_name_en": "IW2406MagSaV1-Brown 弹力带Magsafe磁吸组合两折铝盒包-深棕色",
+        "custom_name": "IW2406MagSaV1-Brown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-27-47428913601",
+        "oms_name_en": "IW2406MagSaV1-Carbon 弹力带Magsafe磁吸组合两折铝盒包-碳纤",
+        "custom_name": "IW2406MagSaV1-Carbon",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-28-76094898887",
+        "oms_name_en": "IW2406MagSaV1-cxOrange 弹力带Magsafe磁吸组合两折铝盒包-超纤橙",
+        "custom_name": "IW2406MagSaV1-cxOrange",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-30-20536718894",
+        "oms_name_en": "IW2406MagSaV1-Grey 弹力带Magsafe磁吸组合两折铝盒包-灰色",
+        "custom_name": "IW2406MagSaV1-Grey",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-31-84768329455",
+        "oms_name_en": "GHUS-KH002-A2-Carbon 三折磁吸侧推铝盒包（碳纤维)",
+        "custom_name": "GHUS-KH002-A2-Carbon",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-34-X003QS4TO7",
+        "oms_name_en": "GHUS-KH001-FM-Brown弹力带两折磁吸侧推（超纤疯马棕）",
+        "custom_name": "GHUS-KH001-FM-Brown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-36-X003QS74UX",
+        "oms_name_en": "GHUS-KH001-Black弹力带两折磁吸侧推（超纤黑）",
+        "custom_name": "GHUS-KH001-Black",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-40-JKM@-ele180in1-Wh",
+        "oms_name_en": "电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-41-JKM@-180in1-Wh",
+        "oms_name_en": "180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-42-JKM@-ele180in1-BK",
+        "oms_name_en": "电动180合1黑色",
+        "custom_name": "JKM@-ele180in1-BK",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-44-JKM@-180in1-BK",
+        "oms_name_en": "180合1黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-47-12024805203",
+        "oms_name_en": "GHUS-KH002-MS-Brown 美国中置AIRTAG三折磁吸侧推铝盒包(磨砂棕)",
+        "custom_name": "GHUS-KH002-MS-Brown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-48-X003RR7Z1L",
+        "oms_name_en": "GHUS-KH002-VintageBrown美国中置AIRTAG三折磁吸侧推铝盒包(磨砂咖啡棕)",
+        "custom_name": "GHUS-KH002-VintageBrown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-51-CXIDKB-Bn",
+        "oms_name_en": "HF8-CXIDKB-Bn iwantit磁吸ID卡包深棕色",
+        "custom_name": "HF8-CXIDKB-Bn",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-52-CXIDKB-CQ-Bk",
+        "oms_name_en": "HF8-CXIDKB-CQ-Bk iwantit磁吸ID卡包超纤黑色",
+        "custom_name": "HF8-CXIDKB-CQ-Bk",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-53-CXIDKB-CQ-BN",
+        "oms_name_en": "HF8-CXIDKB-CQ-BN iwantit磁吸ID卡包超纤棕色",
+        "custom_name": "HF8-CXIDKB-CQ-BN",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-54-46233281973",
+        "oms_name_en": "LORZ-BifW4.02304-Brown 美金大夹4.0：带AIR TAG-疯马红棕",
+        "custom_name": "LORZ-BifW4.02304-Brown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-55-93591707183",
+        "oms_name_en": "LORZ-Tri1.02207-Black 磁吸三折侧推包（带AIR TAG)修面黑，强磁，加弯位，极致薄",
+        "custom_name": "LORZ-Tri1.02207-Black",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-56-1868-BLACK",
+        "oms_name_en": "YX8-QB-1868-BLACK黑色",
+        "custom_name": "YX8-QB-1868-BLACK",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-57-1868-RED",
+        "oms_name_en": "YX8-QB-1868-RED 红色",
+        "custom_name": "YX8-QB-1868-RED",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-58-1868-Redblack",
+        "oms_name_en": "YX8-QB-1868-Reddish-black 黑红渐变松紧带款夹片铝盒",
+        "custom_name": "YX8-QB-1868-Reddish-black",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-60-HY001-1-CB",
+        "oms_name_en": "BD-HY001-1-Carbon 单V款碳纤维",
+        "custom_name": "BD-HY001-1-Carbon",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-61-HY001-2-CB",
+        "oms_name_en": "BD-HY001-2-Carbon 双V款碳纤维",
+        "custom_name": "BD-HY001-2-Carbon",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-62-HY001-1-BK",
+        "oms_name_en": "BD-HY001-1-Black 单V款灰色布纹(黑色）",
+        "custom_name": "BD-HY001-1-Black",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-65-GJ-JLLSD-055+RS1",
+        "oms_name_en": "功能棘轮螺丝刀套装（中性英文版）",
+        "custom_name": "GJ-JLLSD-055+RS1",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-66-LX-RS66IN1",
+        "oms_name_en": "联兴66in1 棘轮工具套装",
+        "custom_name": "LX-RS66IN1",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-67-IW-cxBrown",
+        "oms_name_en": "IW钱夹款-超纤棕",
+        "custom_name": "IW-cxBrown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-68-IW-cxGrey",
+        "oms_name_en": "IW钱夹款-超纤灰",
+        "custom_name": "IW-cxGrey",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-69-IW-cxCarbon",
+        "oms_name_en": "IW钱夹款-超纤碳纤维",
+        "custom_name": "IW-cxCarbon",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-71-40IN1",
+        "oms_name_en": "联兴40in1",
+        "custom_name": "LX-40IN1-BK",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-72-RS2",
+        "oms_name_en": "安仕RS2",
+        "custom_name": "AS-RS2-BK",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-73-HY001-BR",
+        "oms_name_en": "HM-Brown棕色",
+        "custom_name": "HY001-BR",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-74-HY001-GR",
+        "oms_name_en": "HM-Gray灰色布纹",
+        "custom_name": "HY001-GR",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-75-HY001-CA",
+        "oms_name_en": "HM-Carbon碳纤维",
+        "custom_name": "HY001-CA",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-77-HY8-QB-black",
+        "oms_name_en": "双折钱夹卡包-黑色",
+        "custom_name": "HY8-QB-black",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-78-HY8-QB-brown",
+        "oms_name_en": "双折钱夹卡包-棕色",
+        "custom_name": "HY8-QB-brown",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-80-SZT-RS40IN1",
+        "oms_name_en": "联兴40in1棘轮工具套装",
+        "custom_name": "SZT-RS40IN1",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-84-LX8-TE-250701",
+        "oms_name_en": "二代八角手动",
+        "custom_name": "LX8-TE-250701",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-86-LX-30IN1-GB-KER",
+        "oms_name_en": "联兴30in1 改版（灰色加磁器）",
+        "custom_name": "LX-30IN1-GB-KER",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-88-JKM-Y10PRO",
+        "oms_name_en": "杰克美超声波切割打磨套装",
+        "custom_name": "JKM-Y10PRO",
+        "warehouse_name": "维赢",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW1.02209-Brown",
+        "oms_name_en": "美金夹A1款：带AIR TAG钱包疯",
+        "custom_name": "LORZ-BifW1.02209-Brown",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-MagTri3.02302-Black",
+        "oms_name_en": "磁吸三折侧推包(非AirTag)，修面黑",
+        "custom_name": "LORZ-MagTri3.02302-Black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-MagTri2.02212-Carbon",
+        "oms_name_en": "油边款三折侧推铝盒包（带AIR TAG)真皮碳纤维，强磁",
+        "custom_name": "LORZ-MagTri2.02212-Carbon",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-NexAIRM2209-Black",
+        "oms_name_en": "磁吸正推二折（带AIR TAG)疯马黑",
+        "custom_name": "LORZ-NexAIRM2209-Black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifMC2.0Air-Brown",
+        "oms_name_en": "美金大夹A2款: 带AIR TAG油蜡疯马棕",
+        "custom_name": "LORZ-BifMC2.0Air-Brown",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW4.02304-Brown",
+        "oms_name_en": "美金大夹4.0：带AIR TAG-疯马红棕",
+        "custom_name": "LORZ-BifW4.02304-Brown",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DDS4AIR2212-Brown-plus",
+        "oms_name_en": "中置AIRTAG三折磁吸侧推铝盒包 带拉链(疯马棕)",
+        "custom_name": "DDS4AIR2212-Brown-plus",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW1.02301-Carbon",
+        "oms_name_en": "美金夹A1款：带AIR TAG钱包碳纤维",
+        "custom_name": "LORZ-BifW1.02301-Carbon",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003RQMFAD",
+        "oms_name_en": "美国中置AIRTAG三折磁吸侧推铝盒包（碳纤维)GHUS-KH002-Carbon",
+        "custom_name": "X003RQMFAD",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003VYYVNP",
+        "oms_name_en": "GHUS-KH002-MS-Brown美国中置AIRTAG三折磁吸侧推铝盒包(磨砂棕)",
+        "custom_name": "X003VYYVNP",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003RR276T",
+        "oms_name_en": "GHUS-KH002-Black 美国中置AIRTAG三折磁吸侧推铝盒包(修面黑)",
+        "custom_name": "X003RR276T",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003RR7Z1L",
+        "oms_name_en": "GHUS-KH002-VintageBrown美国中置AIRTAG三折磁吸侧推铝盒包(磨砂咖啡棕)",
+        "custom_name": "X003RR7Z1L",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003YCPVS3",
+        "oms_name_en": "GHUS-KH003-Carbon-N1（GHUS-KH003-Carbon-N1）",
+        "custom_name": "X003YCPVS3",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003QS74UX",
+        "oms_name_en": "GHUS-KH001-Black 弹力带两折磁吸侧推（超纤黑）",
+        "custom_name": "X003QS74UX",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003QS74R1",
+        "oms_name_en": "GHUS-KH001-Carbon 弹力带两折磁吸侧推（碳纤维）",
+        "custom_name": "X003QS74R1",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003QS4TO7",
+        "oms_name_en": "GHUS-KH001-FM-Brown 弹力带两折磁吸侧推（超纤疯马棕）",
+        "custom_name": "X003QS4TO7",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003ZQV9Y3",
+        "oms_name_en": "GHUS-KH001-GP-Brown 弹力带裹皮侧推铝盒带AIRTAG-超纤疯马棕",
+        "custom_name": "X003ZQV9Y3",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003ZQYETF",
+        "oms_name_en": "GHUS-KH001-GP-BlackWhite 弹力带裹皮侧推铝盒带AIRTAG-超纤疯马黑白色缝线",
+        "custom_name": "X003ZQYETF",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003ZQLCQD",
+        "oms_name_en": "GHUS-KH001-GP-Carbon 弹力带裹皮侧推铝盒带AIRTAG-超纤碳纤维",
+        "custom_name": "X003ZQLCQD",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003ZQYET5",
+        "oms_name_en": "GHUS-KH001-GP-Vintage Brown 弹力带裹皮侧推铝盒带AIRTAG-超纤咖啡棕+浅棕色撞线",
+        "custom_name": "X003ZQYET5",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "69691613159",
+        "oms_name_en": "XLW-128-Black 新款128黑色",
+        "custom_name": "XLW-128-Black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW 128-White",
+        "oms_name_en": "XLW-128-White 新款128白色",
+        "custom_name": "XLW 128-White",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "23443179476",
+        "oms_name_en": "MT-Ele68in-1 电动68",
+        "custom_name": "MT-Ele68in-1",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "66921483964",
+        "oms_name_en": "XLW128-1 老款128",
+        "custom_name": "XLW128-1",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "64937295502",
+        "oms_name_en": "JKM@-180in1-BK 180黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "78964297771",
+        "oms_name_en": "XGGJ23110201 180白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "67027108113",
+        "oms_name_en": "GJ-JKM-Y03",
+        "custom_name": "GJ-JKM-Y03",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "74384182572",
+        "oms_name_en": "JKM8-JM-6111",
+        "custom_name": "JKM8-JM-6111",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "11554080941",
+        "oms_name_en": "JKM8-JH-8186-Black 8186A",
+        "custom_name": "JKM8-JH-8186-Black 8186A",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "91201164647",
+        "oms_name_en": "JKM8-JH-8186-White 8186B",
+        "custom_name": "JKM8-JH-8186-White 8186B",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "30140067036",
+        "oms_name_en": "XGGJ23110202-47 White 8180B",
+        "custom_name": "XGGJ23110202-47 White 8180B",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "29139519255",
+        "oms_name_en": "MT-Ele142IN1 电动142",
+        "custom_name": "MT-Ele142IN1",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "68047072703",
+        "oms_name_en": "XGGJ23110202-47 Black 8180A",
+        "custom_name": "XGGJ23110202-47 Black 8180A",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "12270039778",
+        "oms_name_en": "MT-ELE156in1-black 电动156黑色",
+        "custom_name": "MT-ELE156in1-black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "73128024059",
+        "oms_name_en": "SS-QB221214-01-coffee 荔枝纹可视窗钱包-咖啡色",
+        "custom_name": "SS-QB221214-01-coffee",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "78274222069",
+        "oms_name_en": "MT-150in1-BUBAO 150布包",
+        "custom_name": "MT-150in1-BUBAO",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "92427395409",
+        "oms_name_en": "SS-QB221214-01-black 荔枝纹可视窗钱包-黑色",
+        "custom_name": "SS-QB221214-01-black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-BH",
+        "oms_name_en": "DD-QB202210-003-BH 热销梯形卡套-B款-黑色",
+        "custom_name": "DD-QB202210-003-BH",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "85747041779",
+        "oms_name_en": "DD-QB202210-005-FML 下推卡盒钱包-蓝色",
+        "custom_name": "DD-QB202210-005-FML",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-BL",
+        "oms_name_en": "DD-QB202210-003-BL 热销梯形卡套-B款-黑配蓝",
+        "custom_name": "DD-QB202210-003-BL",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-FMH",
+        "oms_name_en": "DD-QB202210-003-FMH 热销V字卡套-纯碳黑",
+        "custom_name": "DD-QB202210-003-FMH",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-BJDH",
+        "oms_name_en": "DD-QB202210-003-BJDH 热销梯形卡套-B款-经典黑",
+        "custom_name": "DD-QB202210-003-BJDH",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-FM",
+        "oms_name_en": "DD-QB202210-003-FM 热销V字卡套-碳配橙",
+        "custom_name": "DD-QB202210-003-FM",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-BC",
+        "oms_name_en": "DD-QB202210-003-BC 热销梯形卡套-B款-黑配橙",
+        "custom_name": "DD-QB202210-003-BC",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-FML",
+        "oms_name_en": "DD-QB202210-003-FML 热销V字卡套-碳配蓝",
+        "custom_name": "DD-QB202210-003-FML",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DD-QB202210-003-FMJDH",
+        "oms_name_en": "DD-QB202210-003-FMJDH 热销V字卡套-经典黑",
+        "custom_name": "DD-QB202210-003-FMJDH",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "29233964596",
+        "oms_name_en": "MT-Ele142IN1 142合1电动蓝布包",
+        "custom_name": "MT-Ele142IN1",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "X003EMF4PN",
+        "oms_name_en": "DDSAH2PC2212-Black airtag保护壳2个装",
+        "custom_name": "DDSAH2PC2212-Black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "RRUS-QB013-ATM-Black",
+        "oms_name_en": "磁吸三折侧推包（带AIR TAG)修面黑，强磁，加弯位，极致薄",
+        "custom_name": "RRUS-QB013-ATM-Black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "69883775205",
+        "oms_name_en": "MT-S1-Silver S1加特林银色",
+        "custom_name": "MT-S1-Silver",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH001-Brown",
+        "oms_name_en": "弹力带裹皮侧推铝盒带AIRTAG-超纤疯马棕",
+        "custom_name": "GHUS-KH001-Brown",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH005V2-BlackRed",
+        "oms_name_en": "裹皮侧推铝盒-疯马黑红色缝线带AIRTAG",
+        "custom_name": "WFUS-KH005V2-BlackRed",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Magbif1.02211-Blue",
+        "oms_name_en": "中置AIRTAG两折磁吸侧推铝盒包-蓝色",
+        "custom_name": "LORZ-Magbif1.02211-Blue",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "HX-MS-HG61T1314",
+        "oms_name_en": "户外储藏室-绿色",
+        "custom_name": "HX-MS-HG61T1314",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XUSBKT",
+        "oms_name_en": "USA-234 宠物车载座椅（单座）灰色款",
+        "custom_name": "USA-234",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "43224352605",
+        "oms_name_en": "XB@-L6-16L L6智能垃圾桶三模电池款白色16L",
+        "custom_name": "XB@-L6-16L",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "95419036841",
+        "oms_name_en": "XB@-L6-14L L6智能垃圾桶三模电池款白色14L",
+        "custom_name": "XB@-L6-14L",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "14751490551",
+        "oms_name_en": "XB@-L6-12L L6智能垃圾桶三模电池款白色12L",
+        "custom_name": "XB@-L6-12L",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "CW12L0529",
+        "oms_name_en": "CW12L0529",
+        "custom_name": "CW12L0529",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "41278210449",
+        "oms_name_en": "JKM@-ele180in1-Wh 电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "W1765S00060",
+        "oms_name_en": "W1765S00060 S030L型组合沙发",
+        "custom_name": "W1765S00060",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "W2733P209446",
+        "oms_name_en": "HX-W2733P209446",
+        "custom_name": "W2733P209446",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "W2733P206001",
+        "oms_name_en": "W2733灰色毛毛虫沙发",
+        "custom_name": "W2733P206001",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Tri1.02209-Brown",
+        "oms_name_en": "磁吸三折侧推（带AIR TAG)真皮棕色",
+        "custom_name": "LORZ-Tri1.02209-Brown",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Tri1.02210-Carbon",
+        "oms_name_en": "磁吸三折侧推（带AIR TAG)真皮碳纤维",
+        "custom_name": "LORZ-Tri1.02210-Carbon",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "FF-CB Hoodie-Red-M",
+        "oms_name_en": "X002RXUNXX 女式 V 领油画印花图案 T 恤蝙蝠翼短袖 T 恤 robin 蓝",
+        "custom_name": "FF-CB Hoodie-Red-M",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH004-Black",
+        "oms_name_en": "X003E6136X 中置AIRTAG两折磁吸侧推铝盒包-黑色",
+        "custom_name": "WFUS-KH004-Black",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH004-Carbon",
+        "oms_name_en": "X003JZVOTP 中置AIRTAG两折磁吸侧推铝盒包-碳纤维",
+        "custom_name": "WFUS-KH004-Carbon",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH005-RedBlack",
+        "oms_name_en": "X003TTX1VF 裹皮侧推铝盒-疯马黑红色缝线带AIRTAG",
+        "custom_name": "WFUS-KH005-RedBlack",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH005V2-Carbon",
+        "oms_name_en": "X0041JQUOH 裹皮侧推铝盒-碳纤维黑色缝线带AIRTAG",
+        "custom_name": "WFUS-KH005V2-Carbon",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH005V2L01-BlackRed",
+        "oms_name_en": "X0041IRWWH 裹皮侧推铝盒-疯马黑红色缝线带AIRTAG",
+        "custom_name": "WFUS-KH005V2L01-BlackRed",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH005V2L02-BlackRed",
+        "oms_name_en": "X0041IRW7R 裹皮侧推铝盒-疯马黑红色缝线带AIRTAG",
+        "custom_name": "WFUS-KH005V2L02-BlackRed",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "FF-CT-Purple-L",
+        "oms_name_en": "X002RHLX83 女式 Y2K 上衣风格褶皱拼接 U 领吊带背心罗纹细肩带露脐吊带背心紫色",
+        "custom_name": "FF-CT-Purple-L",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "FF-Short T-Blue3-L",
+        "oms_name_en": "X002RHMEZJ女式 V 领油画印花图案 T 恤蝙蝠翼短袖 T 恤 Blue3",
+        "custom_name": "FF-Short T-Blue3-L",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "FF-Short T-Blue-M",
+        "oms_name_en": "X002RHID2H 女式 V 领油画印花图案 T 恤蝙蝠翼短袖 T 恤robin 蓝",
+        "custom_name": "FF-Short T-Blue-M",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "FF-Short T-Orange-S",
+        "oms_name_en": "X002RHOR09 女式 V 领油画印花图案 T 恤蝙蝠翼短袖 T 恤 橙色",
+        "custom_name": "FF-Short T-Orange-S",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WFUS-KH004-Brown",
+        "oms_name_en": "X003K06XTZ 中置AIRTAG两折磁吸侧推铝盒包-棕色",
+        "custom_name": "WFUS-KH004-Brown",
+        "warehouse_name": "司达",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-38-XLW-ele138-BK",
+        "oms_name_en": "电动138（9913）黑色vman版",
+        "custom_name": "XLW-ele138-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-40-JKM@-ele180in1-Wh",
+        "oms_name_en": "电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-41-JKM@-180in1-Wh",
+        "oms_name_en": "180合1白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-42-JKM@-ele180in1-BK",
+        "oms_name_en": "电动180合1黑色",
+        "custom_name": "JKM@-ele180in1-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-43-XLW128-1",
+        "oms_name_en": "老款128合1",
+        "custom_name": "XLW128-1",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-44-JKM@-180in1-BK",
+        "oms_name_en": "180合1黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-44-JKM@-180in1-BK",
+        "oms_name_en": "180合1黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-64-MT-30IN1-Be",
+        "oms_name_en": "30in1工具套装黑色",
+        "custom_name": "MT-30IN1-Be",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-65-GJ-JLLSD-055+RS1",
+        "oms_name_en": "功能棘轮螺丝刀套装（中性英文版）",
+        "custom_name": "GJ-JLLSD-055+RS1",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-66-LX-40IN1-BK",
+        "oms_name_en": "联兴40in1棘轮工具套装",
+        "custom_name": "LX-40IN1-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-67-MT-Ele68in-1",
+        "oms_name_en": "电动68合1",
+        "custom_name": "MT-Ele68in-1",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-69-LX-RS66IN1",
+        "oms_name_en": "联兴66in1 棘轮工具套装",
+        "custom_name": "LX-RS66IN1",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-70-AS-RS2-BK",
+        "oms_name_en": "安仕RS2 棘轮工具套装",
+        "custom_name": "AS-RS2-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-71-LX8-TE-250701",
+        "oms_name_en": "二代八角手动",
+        "custom_name": "LX8-TE-250701",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-74-DDSIII2109-Black",
+        "oms_name_en": "纽扣三折侧推，修面黑、YKK",
+        "custom_name": "DDSIII2109-Black",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-75-LX-100IN1",
+        "oms_name_en": "联兴100in1 棘轮套装",
+        "custom_name": "LX-100IN1",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-76-XLW-9919-BK",
+        "oms_name_en": "雄力王9919小方盒电动螺丝刀黑色",
+        "custom_name": "XLW-9919-BK",
+        "warehouse_name": "科隆仓",
+        "warehouse_local": "DE",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "12270039778",
+        "oms_name_en": "MT-ELE156in1-black 电动156黑色",
+        "custom_name": "MT-ELE156in1-black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "41278210449",
+        "oms_name_en": "JKM@-ele180in1-Wh 电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "64937295502",
+        "oms_name_en": "JKM@-180in1-BK 180黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "66921483964",
+        "oms_name_en": "XLW128-1 老款128",
+        "custom_name": "XLW128-1",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "78964297771",
+        "oms_name_en": "XGGJ23110201 180白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "AS-RS2-BK",
+        "oms_name_en": "安仕RS2 棘轮工具套装",
+        "custom_name": "AS-RS2-BK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "BD-HY001-1-Brown",
+        "oms_name_en": "HY001-1 单V铝盒包 棕色",
+        "custom_name": "BD-HY001-1-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "BD-HY001-2-Black",
+        "oms_name_en": "HY001-2 双V铝盒包 黑色布纹",
+        "custom_name": "BD-HY001-2-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "BD-HY001-2-Brown",
+        "oms_name_en": "HY001-2 双V铝盒包  棕色",
+        "custom_name": "BD-HY001-2-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "BD-HY001-HM-Brown",
+        "oms_name_en": "HY001-HM 磁吸扣铝盒包棕色",
+        "custom_name": "BD-HY001-HM-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "BD-HY001-HM-Carbon",
+        "oms_name_en": "HY001-HM 磁吸扣铝盒包碳纤维",
+        "custom_name": "BD-HY001-HM-Carbon",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "BD-HY001-HM-Gray",
+        "oms_name_en": "HY001-HM 磁吸扣铝盒包灰色布纹",
+        "custom_name": "BD-HY001-HM-Gray",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DDSNexAIRL2208-Black",
+        "oms_name_en": "二折正推（带AIR TAG)黑色",
+        "custom_name": "DDSNexAIRL2208-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DDSNexL2210-Brown",
+        "oms_name_en": "二折正推棕色",
+        "custom_name": "DDSNexL2210-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "DDSNexL2210-Vintagebrown",
+        "oms_name_en": "二折正推咖啡色",
+        "custom_name": "DDSNexL2210-Vintagebrown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH001-A1-Brown",
+        "oms_name_en": "弹力带裹皮侧推铝盒带AIRTAG-超纤疯马棕",
+        "custom_name": "GHUS-KH001-A1-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH001-A1-VgBn",
+        "oms_name_en": "GHUS-KH001-A1-VintageBrown弹力带裹皮侧推铝盒带AIRTAG-超纤咖啡棕+浅棕色撞线",
+        "custom_name": "GHUS-KH001-A1-VgBn",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH001-FM-Brown",
+        "oms_name_en": "弹力带两折磁吸侧推（超纤疯马棕）",
+        "custom_name": "GHUS-KH001-FM-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH002-A2-Black",
+        "oms_name_en": "美国三折磁吸侧推铝盒包（修面黑)",
+        "custom_name": "GHUS-KH002-A2-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH002-A2-Brown",
+        "oms_name_en": "GHUS-KH002-A2-VintageBrown美国三折磁吸侧推铝盒包（磨砂咖啡棕)",
+        "custom_name": "GHUS-KH002-A2-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GHUS-KH002-A2-Carbon",
+        "oms_name_en": "美国三折磁吸侧推铝盒包（碳纤维)",
+        "custom_name": "GHUS-KH002-A2-Carbon",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GJ-JLLSD-055+RS1",
+        "oms_name_en": "功能棘轮螺丝刀套装（中性英文版）",
+        "custom_name": "GJ-JLLSD-055+RS1",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "HY8-QB-black",
+        "oms_name_en": "双折钱夹卡包-黑色",
+        "custom_name": "HY8-QB-black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "HY8-QB-brown",
+        "oms_name_en": "双折钱夹卡包-棕色",
+        "custom_name": "HY8-QB-brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "IW-cxBrown",
+        "oms_name_en": "IW钱夹款-超纤棕",
+        "custom_name": "IW-cxBrown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "IW-cxCarbon",
+        "oms_name_en": "IW钱夹款-超纤碳纤维",
+        "custom_name": "IW-cxCarbon",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "IW-cxGrey",
+        "oms_name_en": "IW钱夹款-超纤灰",
+        "custom_name": "IW-cxGrey",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "IW2406MagSaV1-Brown",
+        "oms_name_en": "弹力带Magsafe磁吸组合两折铝盒包  深棕色",
+        "custom_name": "IW2406MagSaV1-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "IW2406MagSaV1-Carbon",
+        "oms_name_en": "弹力带Magsafe磁吸组合两折铝盒包  碳纤色",
+        "custom_name": "IW2406MagSaV1-Carbon",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "IW2406MagSaV1-Grey",
+        "oms_name_en": "弹力带Magsafe磁吸组合两折铝盒包  灰色",
+        "custom_name": "IW2406MagSaV1-Grey",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-180in1-BK",
+        "oms_name_en": "杰克美手动180黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-180in1-Wh",
+        "oms_name_en": "180合1白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-ele180in1-BK",
+        "oms_name_en": "电动180合1黑色",
+        "custom_name": "JKM@-ele180in1-BK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-ele180in1-Wh",
+        "oms_name_en": "电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW1.02209-Black",
+        "oms_name_en": "美金夹A1款：带AIR TAG钱包疯马黑",
+        "custom_name": "LORZ-BifW1.02209-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW2.02209-Black",
+        "oms_name_en": "美金夹A2款：带AIR TAG钱包疯马黑",
+        "custom_name": "LORZ-BifW2.02209-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW2.02209-Brown",
+        "oms_name_en": "美金夹A2款：带AIR TAG钱包疯马棕",
+        "custom_name": "LORZ-BifW2.02209-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-BifW4.02304-Brown",
+        "oms_name_en": "美金大夹4.0：带AIR TAG-疯马红棕",
+        "custom_name": "LORZ-BifW4.02304-Brown",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Magsa8080-cxBlack",
+        "oms_name_en": "Magsafe磁吸弹力带铝盒 超纤修面黑白色缝线 钛灰色挂钩",
+        "custom_name": "LORZ-Magsa8080-cxBlack",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Magsa8080-cxWhite",
+        "oms_name_en": "Magsafe磁吸弹力带铝盒 超纤白色拼棕色 金色挂钩",
+        "custom_name": "LORZ-Magsa8080-cxWhite",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-SW1.02212-CrossBlack",
+        "oms_name_en": "ID卡包十字纹黑（带AIR TAG)",
+        "custom_name": "LORZ-SW1.02212-CrossBlack",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Tri1.02207-Black",
+        "oms_name_en": "磁吸三折侧推（带AIR TAG)修面黑",
+        "custom_name": "LORZ-Tri1.02207-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-Tri1.02210-Carbon",
+        "oms_name_en": "磁吸三折侧推（带AIR TAG)真皮碳纤维",
+        "custom_name": "LORZ-Tri1.02210-Carbon",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZ-TriAW4.02307-NbBn",
+        "oms_name_en": "LORZ-TriAW4.02307-NubuckBrown磁吸三折侧推（中置AIR TAG)磨砂咖啡",
+        "custom_name": "LORZ-TriAW4.02307-NbBn",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LORZOR1868T-FM-Black",
+        "oms_name_en": "LORZOR1868定位款-黑色",
+        "custom_name": "LORZOR1868T-FM-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LX-40IN1-BK",
+        "oms_name_en": "联兴40in1棘轮工具套装",
+        "custom_name": "LX-40IN1-BK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LX-RS66IN1",
+        "oms_name_en": "联兴66in1 棘轮工具套装",
+        "custom_name": "LX-RS66IN1",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-142in1-BUBAO",
+        "oms_name_en": "142合1布包",
+        "custom_name": "MT-142in1-BUBAO",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-30IN1-Be",
+        "oms_name_en": "30in1工具套装黑色",
+        "custom_name": "MT-30IN1-Be",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-Ele142IN1",
+        "oms_name_en": "142合1电动蓝布包",
+        "custom_name": "MT-Ele142IN1",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-ELE156in1-black",
+        "oms_name_en": "电动156黑色",
+        "custom_name": "MT-ELE156in1-black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-Ele68in-1",
+        "oms_name_en": "电动68合1",
+        "custom_name": "MT-Ele68in-1",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-S1-Grey",
+        "oms_name_en": "S1加特林灰色",
+        "custom_name": "MT-S1-Grey",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-S1-Silver",
+        "oms_name_en": "S1加特林银色",
+        "custom_name": "MT-S1-Silver",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW-128-Black",
+        "oms_name_en": "新款128黑色",
+        "custom_name": "XLW-128-Black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW-128-White",
+        "oms_name_en": "新款128白色",
+        "custom_name": "XLW-128-White",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW-ele138-BK",
+        "oms_name_en": "电动138（9913）黑色vman版",
+        "custom_name": "XLW-ele138-BK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW128-1",
+        "oms_name_en": "老款128合1",
+        "custom_name": "XLW128-1",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "YX001868-Carbon-TJgray",
+        "oms_name_en": "YX001868机甲贴炭纤维钱夹款（钛金灰）",
+        "custom_name": "YX001868-Carbon-TJgray",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "YX1868clip-Black carbon",
+        "oms_name_en": "YX1868机甲款带钱夹—黑色贴碳纤维",
+        "custom_name": "YX1868clip-Black carbon",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "YX1868clip-TJgray carbon",
+        "oms_name_en": "YX1868机甲款带钱夹—钛金灰色贴碳纤维",
+        "custom_name": null,
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "YX8-QB-1868-BLACK",
+        "oms_name_en": "黑色松紧带款夹片铝盒",
+        "custom_name": "YX8-QB-1868-BLACK",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "YX8-QB-1868-RED",
+        "oms_name_en": "红色松紧带款夹片铝盒",
+        "custom_name": "YX8-QB-1868-RED",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "YX8-QB-1868-Reddish-black",
+        "oms_name_en": "黑红渐变松紧带款夹片铝盒",
+        "custom_name": "YX8-QB-1868-Reddish-black",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "ZL8-RS64",
+        "oms_name_en": "佐隆 RS棘轮64合一",
+        "custom_name": "ZL8-RS64",
+        "warehouse_name": "派派仓",
+        "warehouse_local": "US",
+        "haveCustom_name": true,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "69883775205",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "12270039778",
+        "oms_name_en": "MT-ELE156in1-black 电动156黑色",
+        "custom_name": "MT-ELE156in1-black",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "78964297771",
+        "oms_name_en": "XGGJ23110201 180白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "66921483964",
+        "oms_name_en": "XLW128-1 老款128",
+        "custom_name": "XLW128-1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "23443179476",
+        "oms_name_en": "MT-Ele68in-1 电动68",
+        "custom_name": "MT-Ele68in-1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "64937295502",
+        "oms_name_en": "JKM@-180in1-BK 180黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "99141983925",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "69691613159",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "41278210449",
+        "oms_name_en": "JKM@-ele180in1-Wh 电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW-ele138-BK",
+        "oms_name_en": "电动138（9913）黑色vman版",
+        "custom_name": "XLW-ele138-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM8-8197",
+        "oms_name_en": "",
+        "custom_name": "JKM8-8197",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-ele180in1-Wh",
+        "oms_name_en": "电动180合1白色",
+        "custom_name": "JKM@-ele180in1-Wh",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "XLW128-1",
+        "oms_name_en": "XLW128-1 老款128",
+        "custom_name": "XLW128-1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "LX-RS66IN1",
+        "oms_name_en": "联兴66in1 棘轮工具套装",
+        "custom_name": "LX-RS66IN1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "RS64",
+        "oms_name_en": "佐隆 RS棘轮64合一",
+        "custom_name": "ZL8-RS64",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "RS2",
+        "oms_name_en": "安仕RS2 棘轮工具套装",
+        "custom_name": "AS-RS2-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-180in1-Wh",
+        "oms_name_en": "180合1白色",
+        "custom_name": "JKM@-180in1-Wh",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-ele180in1-BK",
+        "oms_name_en": "电动180合1黑色",
+        "custom_name": "JKM@-ele180in1-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "40IN1",
+        "oms_name_en": "联兴40in1棘轮工具套装",
+        "custom_name": "LX-40IN1-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "MT-30IN1-Be",
+        "oms_name_en": "30in1工具套装黑色",
+        "custom_name": "MT-30IN1-Be",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "66313446015",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "46838574713",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "42302401341",
+        "oms_name_en": "MT-S1-Grey S1加特林灰色",
+        "custom_name": "MT-S1-Grey",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "11554080941",
+        "oms_name_en": "JKM8-JH-8186-Black 8186A",
+        "custom_name": "JKM8-JH-8186-Black 8186A",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "74384182572",
+        "oms_name_en": "JKM8-JM-6111",
+        "custom_name": "JKM8-JM-6111",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "68047072703",
+        "oms_name_en": "XGGJ23110202-47 Black 8180A",
+        "custom_name": "XGGJ23110202-47 Black 8180A",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "67027108113",
+        "oms_name_en": "GJ-JKM-Y03",
+        "custom_name": "GJ-JKM-Y03",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "29139519255",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "91201164647",
+        "oms_name_en": "JKM8-JH-8186-White 8186B",
+        "custom_name": "JKM8-JH-8186-White 8186B",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "30140067036",
+        "oms_name_en": "XGGJ23110202-47 White 8180B",
+        "custom_name": "XGGJ23110202-47 White 8180B",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "29233964596",
+        "oms_name_en": "MT-Ele142IN1 142合1电动蓝布包",
+        "custom_name": "MT-Ele142IN1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "78274222069",
+        "oms_name_en": "",
+        "custom_name": "",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "GJ-JLLSD-055-RS1",
+        "oms_name_en": "功能棘轮螺丝刀套装（中性英文版）",
+        "custom_name": "GJ-JLLSD-055+RS1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "JKM-180in1-BK",
+        "oms_name_en": "杰克美手动180黑色",
+        "custom_name": "JKM@-180in1-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-80-SZT-RS40IN1",
+        "oms_name_en": "联兴40in1棘轮工具套装",
+        "custom_name": "LX-40IN1-BK",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "SZT-RS66IN1",
+        "oms_name_en": "联兴66in1 棘轮工具套装",
+        "custom_name": "LX-RS66IN1",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    },
+    {
+        "oms_sku": "WO-84-LX8-TE-250701",
+        "oms_name_en": "二代八角手动",
+        "custom_name": "LX8-TE-250701",
+        "warehouse_name": "维赢自研仓",
+        "warehouse_local": "US",
+        "haveCustom_name": false,
+        "prev_name": null,
+        "tag_list": []
+    }
+]

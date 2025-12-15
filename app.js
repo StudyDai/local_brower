@@ -12,6 +12,7 @@ let windows = Window.all();
 const tesseract = require('tesseract.js');
 const serveIndex = require('serve-index');
 const { pdfToPng } = require('pdf-to-png-converter');
+const warehouse_list = require('./warehouse_map.json')
 // 这个地方调用下xlsx吧
 let xlData = [['操作参数(1点击,2双击,3滚动,4复制,5粘贴,6长按, 7等待, 8自定义, 9移动， 10自定义鼠标操作', '时长/滚动距离', '操作的图片路径']]
 // 循环
@@ -689,12 +690,12 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     var param = {
         'detailsData': [{
             // "ProductName": "headlamp",
-            "ProductName": "ultrasonic cutter",
+            // "ProductName": "ultrasonic cutter",
             // "ProductName": "juice cup",
             // "ProductName": "Light board",
             // "ProductName": "ProductName: Manual Screwdriver Set",
             // "ProductName": "Electric Wine Opener",
-            // "ProductName": "Blade Set",
+            "ProductName": "Blade Set",
             // "ProductName": "ProductName: electric Screwdriver Set",
             // "ProductName": "ProductName: Children's Toy Drone",
             // "ProductName": "ProductName: Card Holder",
@@ -702,7 +703,7 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
             "Model": "Model: " + saveName,
             "Manufacturer": "Manufacturer: Guangzhoushishouzhitoudianzishangwu Co., Ltd.",
             "Address": "Address: CN-B2-08, No. 81 Xinye Road, Haizhu District, Guangzhou (office only). Guangzhou, China",
-            "Representative": "EU ResponsiblePerson: Linc Cong\nEU RepresentativeAddress: c/o HQ Westendfair Business Centre,Friedrich-Ebert-Anlage 36,Frankfurt,Germany\nTel: 49-030800982701\nE-mail: eurep@wincomply.com",
+            "Representative": "EU ResponsiblePerson: Linc Cong\nEU RepresentativeAddress: Friedrich-Ebert-Anlage 36, 60325 Frankfurt, Hesse, Germany.\nTel: 49-030800982701\nE-mail: eurep@wincomply.com",
             "userDefaultText1": "IWAN7299@163.com",
             "userDefaultText2": "Made In China"
         }],
@@ -1125,7 +1126,21 @@ app.post('/getActivity', async function(req, res, next) {
 
 })
 
-// 这边去拿销量
+// 将本地的json传递过去，然后等返回更新
+app.get('/warehouse_list', async function (req, res, next) {
+    res.send({
+        code: 200,
+        data: warehouse_list
+    })
+})
+
+// 更新本地的json数据
+app.post('/update_warehouse_map', async function (req, res, next) {
+    const data = req.body
+    let file_path = path.resolve(__dirname, './warehouse_map.json')
+    fs.writeFileSync(file_path, JSON.stringify(data), 'utf8')
+    console.log('更新成功')
+})
 
 
 
