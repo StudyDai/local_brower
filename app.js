@@ -3,9 +3,11 @@ const app = express();
 const fs = require('fs');
 const path = require('path')
 const multer = require('multer')
+const axios = require('axios')
 const cors = require('cors');
 const xlsx = require('xlsx');
 const sharp = require('sharp');
+const ExcelJS = require('exceljs')
 const { exec, spawn } = require('child_process');
 const { Window } = require("node-screenshots");
 let windows = Window.all();
@@ -224,16 +226,16 @@ aliexpress.forEach(item => {
     xlData.push([7,2,''])
 })
 // 导出
-let ali_wb = xlsx.utils.book_new()
-let ali_ws = xlsx.utils.aoa_to_sheet(xlData)
+// let ali_wb = xlsx.utils.book_new()
+// let ali_ws = xlsx.utils.aoa_to_sheet(xlData)
 // 添加
-xlsx.utils.book_append_sheet(ali_wb, ali_ws, 'sheet')
+// xlsx.utils.book_append_sheet(ali_wb, ali_ws, 'sheet')
 // 导出
-xlsx.writeFile(ali_wb, path.resolve(__dirname, './aliexpress_msg.xlsx'))
-const https = require('https')
-let current_ip = '192.168.188.79'
-let warehouseName = 'TX'
-let goodSku = 'USA-100'
+// xlsx.writeFile(ali_wb, path.resolve(__dirname, './aliexpress_msg.xlsx'))
+// const https = require('https')
+// let current_ip = '192.168.188.79'
+// let warehouseName = 'TX'
+// let goodSku = 'USA-100'
 let currentTime = new Date().getTime();
 const options = {
     key: fs.readFileSync('./key/private-key.pem'),
@@ -439,7 +441,7 @@ var md5 = function (string) {
   
     return temp.toLowerCase();
 }
-const httpsServer = https.createServer(options, app)
+// const httpsServer = https.createServer(options, app)
 function delayFn() {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
@@ -603,6 +605,148 @@ app.get('/del', async function(req, res, next) {
         msg: '删除成功'
     })
 })
+app.get('/get_map_data', async function(req, res, next) {
+    let filePath = path.resolve(__dirname, 'uploads/CardWalletAssociationMapping.xlsx')
+    fs.readFile(filePath, async (err, data) => {  
+        if (err) {
+            console.log('有错误', err)
+            return
+        }
+        // 使用 xlsxjs 解析文件
+        const workbook = xlsx.read(data, { type: 'buffer' });
+        // 获取文件名称
+        const filename = workbook.SheetNames[0]
+        // 获取第一个工作表数据
+        const worksheet = workbook.Sheets[filename]
+        // 转化json格式
+        const jsondata = xlsx.utils.sheet_to_json(worksheet, { header: 1})
+        console.log(jsondata,'看看效果')
+        if (jsondata.length) {
+            // 返回
+            res.send({
+                code: 200,
+                msg: '请求成功',
+                data: jsondata
+            })
+        }
+    })
+})
+app.post('/save_purchase_table', async function(req, res, next) {
+    try {
+        console.log(req.body)
+        let list_data = req.body;
+        // 校验list_data格式，避免空数据报错
+        if (!Array.isArray(list_data) || list_data.length === 0 || !Array.isArray(list_data[0])) {
+            return res.send({ code: 400, msg: '数据格式错误，需传入二维数组' });
+        }
+
+        workbook = new ExcelJS.Workbook();
+        worksheet = workbook.addWorksheet('采购单明细');
+
+        // 1. 写表头（保留原有逻辑，正常生效）
+        for (let index = 0; index < list_data[0].length; index++) {
+            const element = list_data[0][index];
+            let code = String.fromCharCode(65 + index);
+            worksheet.getCell(`${code}1`).value = element;
+        }
+
+        // 2. 渲染图片和数据（修复循环范围+坐标+尺寸）
+        // 修复：循环范围改为 index < list_data.length，不遗漏最后一行
+        for (let index = 1; index < list_data.length; index++) {
+            const element = list_data[index];
+            // 跳过空行
+            if (!Array.isArray(element)) continue;
+
+            for (let item_index = 0; item_index < element.length; item_index++) {
+                const item = element[item_index] || ''; // 避免item为undefined
+                let code = String.fromCharCode(65 + item_index);
+                const excelRowNum = index + 1; // 对应Excel的实际行号（表头是1，数据从2开始）
+                const excelJsRowIndex = excelRowNum - 1; // 转换为ExcelJS的行索引（从0开始）
+
+                // 处理A列（item_index=0）的图片
+                if (item_index === 0 && item.trim()) {
+                    try {
+                        // 图片请求
+                        const response = await axios({ 
+                            url: item, 
+                            method: 'GET', 
+                            responseType: 'arraybuffer',
+                            timeout: 10000 // 超时设置，避免卡壳
+                        });
+
+                        // 修复：正确获取图片后缀（兼容带参数的URL）
+                        let pic_ext = path.extname(new URL(item).pathname).toLowerCase();
+                        pic_ext = pic_ext.replace('.', '') || 'jpg'; // 无后缀默认jpg
+                        // 兼容常见图片格式
+                        const validExts = ['jpg', 'jpeg', 'png', 'gif'];
+                        if (!validExts.includes(pic_ext)) {
+                            pic_ext = 'jpg';
+                        }
+                        console.log('后缀', pic_ext);
+
+                        // 添加图片到workbook
+                        const imageId = workbook.addImage({
+                            buffer: response.data,
+                            extension: pic_ext,
+                        });
+
+                        const imgWidthPx = 75;
+                        const imgHeightPx = 75;
+                        const colWidth = imgWidthPx / 8.43;
+                        const rowHeight = imgHeightPx / 1.33;
+
+                        // 设置A列宽度和当前行高度（只设置一次，避免重复覆盖）
+                        if (item_index === 0) {
+                            worksheet.getColumn('A').width = Math.ceil(colWidth);
+                            worksheet.getRow(excelRowNum).height = Math.ceil(rowHeight);
+                        }
+
+                        // 修复：图片插入坐标（简洁准确，无需复杂比例计算）
+                        worksheet.addImage(imageId, {
+                            tl: { col: 0, row: excelJsRowIndex }, // 左上角：A列 + 当前数据行的ExcelJS索引
+                            br: { col: 1, row: excelJsRowIndex + 1 }, // 右下角：B列 + 下一行（确保图片显示在当前单元格）
+                            editAs: 'oneCell'
+                        });
+                        console.log('图片已插入', excelRowNum, '行');
+
+                    } catch (imgErr) {
+                        // 图片请求失败，不阻断流程，单元格显示提示
+                        console.error('图片加载失败：', imgErr.message);
+                        worksheet.getCell(`${code}${excelRowNum}`).value = '图片加载失败';
+                    }
+                } else {
+                    // 处理非图片列数据
+                    worksheet.getCell(`${code}${excelRowNum}`).value = item;
+                }
+            }
+        }
+
+        // 写入Excel文件（确保目录存在，避免报错）
+        let file_name = new Date().getTime()
+        const savePath = path.resolve(__dirname, `caigou/${file_name}.xlsx`);
+        // 自动创建caigou目录（如果不存在）
+        const dir = path.dirname(savePath);
+        const fs = require('fs');
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        await workbook.xlsx.writeFile(savePath);
+
+        res.send({
+            code: 200,
+            msg: '成功啦',
+            data: savePath
+        });
+    } catch (err) {
+        // 全局错误捕获，返回错误信息
+        console.error('接口整体错误：', err);
+        res.status(500).send({
+            code: 500,
+            msg: '生成Excel失败',
+            error: err.message
+        });
+    }
+});
 const storage = multer.diskStorage({
     // 设置文件存储的目标目录
     destination: function (req, file, cb) {

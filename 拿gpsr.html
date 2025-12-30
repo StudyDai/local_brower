@@ -43,39 +43,29 @@
 
 <body>
     <input id="ipt" type="text" class="ipt" />
+    <select id="selector">
+        <option value="manual_screw">手动螺丝刀</option>
+        <option value="electric_screw">电动螺丝刀</option>
+        <option value="cutter">切割刀</option>
+        <option value="light">灯牌</option>
+        <option value="blade">切割刀片</option>
+        <option value="bluetooth">耳机</option>
+        <option value="card">卡包</option>
+        <option value="head_light">头灯</option>
+    </select>
     <button id="btn">生成</button>
-    <canvas width="500" height="500"></canvas>
-    <div class="container">
-        <div class="boat" style="z-index: 0;"></div>
-        <div class="select" style="display: flex; justify-content: center; align-items: center; position: relative; z-index: 1; left: -8px;">
-            <div class="child active" style="width: 25%; margin: 0 5px; text-align: center; color: red;">1</div>
-            <div class="child" style="width: 25%; margin: 0 5px; text-align: center; color: red;">2</div>
-            <div class="child" style="width: 25%; margin: 0 5px; text-align: center; color: red;">3</div>
-            <div class="child" style="width: 25%; margin: 0 5px; text-align: center; color: red;">4</div>
-        </div>
-    </div>
     <script>
-        var childs = document.querySelectorAll('.child')
-        var boat = document.querySelector('.boat')
-        childs.forEach((c, i) => {
-            c.onclick = function() {
-                let active = document.querySelector('.child.active')
-                active && active.classList.toggle('active')
-                boat.style.transform = `translateX(${i * 100}px)`
-                this.classList.add('active')
-            }
-        })
-
-
-
-
-        
+       
         var iptEl = document.getElementById('ipt')
         var btn = document.getElementById('btn')
         var a = document.createElement('a')
-        let saveName = ''
+        let saveName = '';
+        let output_value = '';
         var xhr = new XMLHttpRequest()
         btn.onclick = function() {
+            let selector = document.getElementById('selector')
+            output_value = selector.value
+            console.log('选择的值', output_value)
             saveName = iptEl.value
             // 请求
             xhr.open('POST', 'http://192.168.188.77:8889/getDianxiaomiPDF')
@@ -99,12 +89,6 @@
             }
         }
 
-        let canvasEl = document.querySelector('canvas')
-        const ctx = canvasEl.getContext('2d')
-        ctx.beginPath()
-        // 弧度和角度的关系就是 1度等于 π / 180 那么要从0 到 90度 则是 0 到 π / 2
-        ctx.arc(50,50,50,0,Math.PI / 2, false)
-        ctx.stroke()
     </script>
 </body>
 

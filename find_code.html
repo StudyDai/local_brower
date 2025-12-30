@@ -5,73 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Document</title>
   <style>
-    .box {
-      position: relative;
-      width: 50px;
-      height: 50px;
-      /* background-color: black; */
-      border: 1px solid #9999993f;
-      margin: 0 10px;
-      border-radius: 50%;
-    }
-    body .box::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: yellow;
-      box-shadow: 0 0 5px 10px rgba(255, 255, 0, 0.589);
-      border-radius: 50%;
-      /* 奇数项：总周期2s，动画1s+暂停1s */
-      animation: hide 2s ease-out infinite;
-      animation-fill-mode: both; /* 替代backwards，覆盖全程 */
-    }
-
-    /* 偶数项：延迟1s（等于奇数项动画时长），总周期相同，永久错位 */
-    body :nth-of-type(2n).box::before {
-      animation: show 2s ease-out infinite;
-    }
-    @keyframes hide {
-      0%,100% {
-        opacity: 1;
-      }
-      50% {
-        opacity: 0;
-      }
-    }
-    @keyframes show {
-      0%, 100% {
-        opacity: 0;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
+    
   </style>
 </head>
-<body style="display: flex; justify-content: center; align-items: center; width: 100vw; height: 100vh;">
-    <div class="box1 box"></div>
-    <div class="box2 box"></div>
+<body>
+  <div class="sku-stock-table-wrap">
+    
+  </div>
 </body>
-<script>
-  const getObjProxy = async (obj) => {
-    const proxy = new Proxy(obj, {
-      get(target, key) {
-        // 这里会打印吗、会打印什么
-        console.log('get-233', key)
-        return Reflect.get(target, key)
-      },
-    })
-
-    return proxy
-  }
-
-  // 当调用fn时，会触发get方法吗，
-  const fn = async () => {
-    const objProxy = await getObjProxy({})
-  }
-  fn()
-</script>
 </html>
