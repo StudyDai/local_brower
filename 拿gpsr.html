@@ -59,19 +59,20 @@
         var iptEl = document.getElementById('ipt')
         var btn = document.getElementById('btn')
         var a = document.createElement('a')
-        let saveName = '';
+        let saveType, saveName = '';
         let output_value = '';
         var xhr = new XMLHttpRequest()
+        let selector = document.getElementById('selector')
         btn.onclick = function() {
-            let selector = document.getElementById('selector')
             output_value = selector.value
-            console.log('选择的值', output_value)
+            saveType = output_value ?? 'manual_screw'
             saveName = iptEl.value
             // 请求
             xhr.open('POST', 'http://192.168.188.77:8889/getDianxiaomiPDF')
             xhr.setRequestHeader('content-type', 'application/json')
             xhr.send(JSON.stringify({
-                saveName
+                saveName,
+                saveType
             }))
         }
         // 发送之后我这边监听下是什么情况
