@@ -5,6 +5,8 @@ import pyautogui
 import pyperclip
 import os
 import sys
+import schedule
+from datetime import datetime
 # 对数据进行验证
 def dataCheck(sheetdata):
     # 开始检测
@@ -296,11 +298,18 @@ def mainWork(sheetdata):
 
 # 获取资源文件的绝对路径（兼容打包后环境）
 def get_resource_path(relative_path):
-    # 打包后，资源会被放在 sys._MEIPASS 临时目录
-    if hasattr(sys, '_MEIPASS'):
-        return os.path.join(sys._MEIPASS, relative_path)
-    # 未打包时，用脚本所在目录拼接路径
-    return os.path.join(os.path.abspath(os.path.dirname(__file__)), relative_path)
+    if hasattr(sys, 'frozen') and getattr(sys, 'frozen'):
+        # 情况 1：-F 打包后，运行 exe（frozen 为 True）
+        # sys.executable 就是 exe 本身的完整路径（如：D:\dist\main_project.exe）
+        exe_path = os.path.abspath(sys.executable)
+        # 获取 exe 所在的目录（外部目录，不是临时目录）
+        base_path = os.path.dirname(exe_path)
+    else:
+        # 情况 2：未打包，直接运行 .py 脚本
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    # 拼接外部资源的完整路径（exe/.py 同级 → 目标文件）
+    return os.path.join(base_path, relative_path)
+
 
 # 初始化
 if __name__ == '__main__':
@@ -328,10 +337,10 @@ if __name__ == '__main__':
     print('检查结果为', checkCmd)
     if checkCmd:
         # 证明数据是对的, 看看用户要进行什么操作
-        key = input("请选择你要操作的业务\n1.自动化发货\n2.自动化摸鱼\n")
+        key = input("请选择你要操作的业务\n1.自动化发货\n2.自动化摸鱼\n3.定时提醒\n")
         if key == '1':
             # 证明要搞自动化,那么就调用我的函数来操作
-            print('自动化发货流程正在初始化,请稍后')
+            # print('自动化发货流程正在初始化,请稍后')
             mainWork(sheet1)
         elif key == '2':
             print('正要发单ing~')
@@ -345,5 +354,17 @@ if __name__ == '__main__':
                 k += 1
                 mainWork(sheet1) 
         elif key == '3':
+            alreadyGo = False
+            def Start():
+                mainWork(sheet1)
+            timeKey = input("每天几点进行操作\n")
+            current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            log_content = f"【定时任务日志】：执行每日{timeKey}点任务，程序运行正常。"
+            time_list = timeKey.split(":")
+            print(log_content, time_list)
+            # for c_time in range(6):    
+                # schedule.every().day.at(f"{int(time_list[0])+c_time}:{time_list[1]}").do(Start)
             while True:
-                pyautogui.click(100, 100, clicks=1,interval=60,button="left")
+                # schedule.run_pending()
+                pyautogui.click(50, 0, clicks=1,interval=0.2,duration=0.2,button="left")
+                time.sleep(10)

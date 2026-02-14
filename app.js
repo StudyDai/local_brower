@@ -854,31 +854,31 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
     }
     switch(saveType) {
         case 'manual_screw':
-            param.detailsData[0].ProductName = "Manual Screwdriver Set"
+            param.detailsData[0].ProductName = "ProductName: Manual Screwdriver Set"
             break;
         case 'electric_screw':
-            param.detailsData[0].ProductName = "electric Screwdriver Set"
+            param.detailsData[0].ProductName = "ProductName: electric Screwdriver Set"
             break;
         case 'cutter':
-            param.detailsData[0].ProductName = "ultrasonic cutter"
+            param.detailsData[0].ProductName = "ProductName: ultrasonic cutter"
             break;
         case 'light':
-            param.detailsData[0].ProductName = "Light board"
+            param.detailsData[0].ProductName = "ProductName: Light board"
             break;
         case 'blade':
-            param.detailsData[0].ProductName = "Blade Set"
+            param.detailsData[0].ProductName = "ProductName: Blade Set"
             break;
         case 'bluetooth':
-            param.detailsData[0].ProductName = "Bluetooth headset"
+            param.detailsData[0].ProductName = "ProductName: Bluetooth headset"
             break;
         case 'card':
-            param.detailsData[0].ProductName = "Card Holder"
+            param.detailsData[0].ProductName = "ProductName: Card Holder"
             break;
         case 'head_light':
-            param.detailsData[0].ProductName = "headlamp"
+            param.detailsData[0].ProductName = "ProductName: headlamp"
             break;
         default:
-            param.detailsData[0].ProductName = "Manual Screwdriver Set"
+            param.detailsData[0].ProductName = "ProductName: Manual Screwdriver Set"
             console.log('出错了应该是,这个是没选')
     }
     const result = await fetch(url, {
@@ -1360,6 +1360,66 @@ app.get('/getFileName', async function(req, res, next) {
 
 app.post('/formatListenerData', async function(req, res, next) {
     console.log(req.body)
+})
+let tiktok_filter_data = []
+// 拿到tiktok的数据
+app.post('/getTiktokData', async function name(req, res, next) {
+    tiktok_filter_data = []
+    let cookies = req.body.cookie        
+    let url = `https://api16-normal-sg.tiktokshopglobalselling.com/api/plan/supplier/SupplierQueryPlanningV2?aid=6556&locale=zh-CN&oec_seller_id=8647260674985397947&timezone_offset=-480&_=${new Date().getTime()}`
+    const myHeader = new Headers()
+    myHeader.append('Content-Type', 'application/json')
+    myHeader.append('Cookie', cookies)
+    async function getData(page) {
+        const resp = await fetch(url, {
+            method: 'post',
+            credentials: 'omit',
+            body: JSON.stringify({
+                "query_param": {},
+                "sort_info": {
+                    "sort_fields": [
+                    {
+                        "field": "pay_sub_ord_cnt_30d",
+                        "asc": true
+                    }
+                    ]
+                },
+                "page_info": {
+                    "page_no": page,
+                    "page_size": 50
+                },
+                "sort_sku_in_spu_flag": false,
+                "view_mode": 2
+            }),
+            headers: myHeader
+        }).then(res => res.json())
+        if (resp.data.data?.length) {
+            // 有东西 看最后一个是不是0,如果不是 就直接下一页
+            let final_data = resp.data.data[resp.data.data.length - 1]
+            let page_info = resp.data.page_info
+            let need_count = page_info.total_count / page_info.page_size
+            // skc_pay_sub_ord_cnt_30d
+            if (!+final_data.skc_pay_sub_ord_cnt_30d) {
+                // 筛选出来最后一个有数的
+                let final_item = resp.data.data.findIndex(item => !(+item.skc_pay_sub_ord_cnt_30d))
+                // 从这个位置开始往后，全部拿
+                tiktok_filter_data.push(...resp.data.data.splice(final_item).map(item => ({
+                    skc_num: item.skc_code,
+                    sku_num: item.sku_code,
+                    spu_num: item.spu_code
+                })))
+            }
+            if (page != need_count) {
+                await getData(page+1)
+            }
+        }
+    }
+    await getData(1)
+    res.send({
+        code: 200,
+        msg: '成功',
+        data: tiktok_filter_data
+    })
 })
 
 app.listen('8889',() => {
