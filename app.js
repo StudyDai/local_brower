@@ -8,6 +8,8 @@ const cors = require('cors');
 const xlsx = require('xlsx');
 const sharp = require('sharp');
 const ExcelJS = require('exceljs')
+const WebSocket = require('ws')
+const wss = new WebSocket.Server({ port: 8888 });
 const { exec, spawn } = require('child_process');
 const { Window } = require("node-screenshots");
 let windows = Window.all();
@@ -225,6 +227,30 @@ aliexpress.forEach(item => {
     xlData.push([1,'','./auto_aliexpress/send.jpg'])
     xlData.push([7,2,''])
 })
+
+let ip_poor = {
+    "192.168.188.57": {
+        statu: false,
+        name: 'pcpveYD02',
+        pwd: 'szt20171218',
+        addr: '影刀02',
+        clientId: 0
+    },
+    "192.168.188.92": {
+        statu: false,
+        name: 'pcpveYD01',
+        pwd: 'szt20171218',
+        addr: '影刀01',
+        clientId: 0
+    },
+    "192.168.188.125": {
+        statu: false,
+        name: 'pcPve01',
+        pwd: 'szt20171218',
+        addr: '紫鸟01',
+        clientId: 0
+    }
+}
 // 导出
 // let ali_wb = xlsx.utils.book_new()
 // let ali_ws = xlsx.utils.aoa_to_sheet(xlData)
@@ -877,6 +903,9 @@ app.post('/getDianxiaomiPDF', async (req, res, next) => {
         case 'head_light':
             param.detailsData[0].ProductName = "ProductName: headlamp"
             break;
+        case 'friction_plate':
+            param.detailsData[0].ProductName = "ProductName: friction_plate"
+            break;
         default:
             param.detailsData[0].ProductName = "ProductName: Manual Screwdriver Set"
             console.log('出错了应该是,这个是没选')
@@ -1363,19 +1392,26 @@ app.post('/formatListenerData', async function(req, res, next) {
 })
 let tiktok_filter_data = []
 // 拿到tiktok的数据
-app.post('/getTiktokData', async function name(req, res, next) {
+app.post('/getTiktokData', async function (req, res, next) {
     tiktok_filter_data = []
     let cookies = req.body.cookie        
-    let url = `https://api16-normal-sg.tiktokshopglobalselling.com/api/plan/supplier/SupplierQueryPlanningV2?aid=6556&locale=zh-CN&oec_seller_id=8647260674985397947&timezone_offset=-480&_=${new Date().getTime()}`
+    console.log(cookies,'||||||||||||||', req.body)
+    let url = `https://api16-normal-sg.tiktokshopglobalselling.com/api/plan/supplier/SupplierQueryPlanningV2?aid=6556&locale=zh-CN&oec_seller_id=${req.body.oec_seller_id}&timezone_offset=-480&_=${new Date().getTime()}&msToken=${req.body.msToken}`
     const myHeader = new Headers()
     myHeader.append('Content-Type', 'application/json')
     myHeader.append('Cookie', cookies)
+    let xlsxData = [['skc_num', 'sku_num', 'spu_num', 'sku_name']]
     async function getData(page) {
         const resp = await fetch(url, {
             method: 'post',
             credentials: 'omit',
             body: JSON.stringify({
-                "query_param": {},
+                "query_param": {
+                    "jit_statue_list": ["1"],
+                    "onsale_days_td_begin": "30",
+                    "onsale_days_td_start": "30",
+
+                },
                 "sort_info": {
                     "sort_fields": [
                     {
@@ -1393,7 +1429,7 @@ app.post('/getTiktokData', async function name(req, res, next) {
             }),
             headers: myHeader
         }).then(res => res.json())
-        if (resp.data.data?.length) {
+        if (resp.data?.data?.length) {
             // 有东西 看最后一个是不是0,如果不是 就直接下一页
             let final_data = resp.data.data[resp.data.data.length - 1]
             let page_info = resp.data.page_info
@@ -1403,24 +1439,362 @@ app.post('/getTiktokData', async function name(req, res, next) {
                 // 筛选出来最后一个有数的
                 let final_item = resp.data.data.findIndex(item => !(+item.skc_pay_sub_ord_cnt_30d))
                 // 从这个位置开始往后，全部拿
-                tiktok_filter_data.push(...resp.data.data.splice(final_item).map(item => ({
-                    skc_num: item.skc_code,
-                    sku_num: item.sku_code,
-                    spu_num: item.spu_code
-                })))
+                tiktok_filter_data.push(...resp.data.data.splice(final_item).map(item => {
+                    xlsxData.push([item.skc_code, item.sku_code, item.spu_code, item.supply_code])
+                    return {
+                        skc_num: item.skc_code,
+                        sku_num: item.sku_code,
+                        spu_num: item.spu_code,
+                        item_sku: item.supply_code
+                    }
+                }))
             }
             if (page != need_count) {
                 await getData(page+1)
             }
+            console.log(333)
         }
     }
     await getData(1)
+    // 保存到本地
+    if (tiktok_filter_data.length) {
+        const wb = xlsx.utils.book_new()
+        // 初始化下我的数据
+        const ws = xlsx.utils.aoa_to_sheet(xlsxData)
+        // 添加进去
+        xlsx.utils.book_append_sheet(wb, ws, 'tiktok近30天无动销')
+        let savePath = path.resolve(__dirname, 'uploads/tiktok近三十天无动销统计表.xlsx')
+        xlsx.writeFile(wb, savePath)
+    }
     res.send({
         code: 200,
         msg: '成功',
         data: tiktok_filter_data
     })
 })
+
+// tiktok下架
+app.post('/download_tiktok_link', async function (req, res, next) {
+    const {oec_seller_id, sku, cookies} = req.body
+    const myHeader = new Headers()
+    myHeader.append('Content-Type', 'application/json')
+    myHeader.append('Cookie', cookies)
+    // {
+    // "sku_status_map": {
+    //     "S26022604539500101": {
+    //     "sku_code": "S26022604539500101",
+    //     "supply_status": 4,
+    //     "supply_status_reason": {
+    //         "reason": {
+    //         "code": "DISCONTINUED"
+    //         }
+    //     }
+    //     }
+    // }
+    // }
+    let url = `https://api16-normal-sg.tiktokshopglobalselling.com/api/full-service/product_supply/update_supply_status?aid=6556&oec_seller_id=${oec_seller_id}&timezone_offset=-480&_=${new Date().getTime()}`
+    const resp = await fetch(url, {
+        method: 'post',
+        body: JSON.stringify({
+            "sku_status_map": {
+                [sku]: {
+                "sku_code": sku,
+                "supply_status": 4,
+                "supply_status_reason": {
+                    "reason": {
+                    "code": "DISCONTINUED"
+                    }
+                }
+                }
+            }
+        }),
+        headers: myHeader
+    }).then(res => res.json())
+    console.log(resp)
+    if (!resp.base_resp.code) {
+        res.send({
+            code: 200,
+            msg: '下架成功'
+        })
+    }
+})
+
+// TEMU流量分析下载表格
+app.post('/download_temu_fenxi', async function (req, res, next) {
+    let mallid = req.body.mallid 
+    let cookie = req.body.cookie 
+    let url = 'https://agentseller.temu.com/api/seller/full/flow/analysis/goods/list'
+    const myHeader = new Headers()
+    myHeader.append('Content-Type', 'application/json')
+    myHeader.append('mallid', mallid)
+    myHeader.append('cookie', cookie)
+    const resp = await fetch(url, {
+        method: 'post',
+        body: JSON.stringify({
+            "pageSize": 100,
+            "pageNum": 1,
+            "timeDimension": 4
+        }),
+        headers: myHeader
+    }).then(res => res.json())
+    if (resp.success) {
+        // 开始格式化
+        let data = [['spu', '曝光量', '点击量', '访客数', '浏览量', '加购人数', '收藏人数', '支付件数', '支付订单数', '买家数', '转化率', '点击率', '点击转化率',
+            '搜索数据-曝光量', '搜索数据-点击量', '搜索数据-支付订单数', '搜索数据-支付件数', '推荐数据-曝光量', '推荐数据-点击量', '推荐数据-支付订单数', "推荐数据-支付件数"
+        ]]
+        resp.result.list.forEach(item => {
+            let zhuanhua_rate = (item.exposePayConversionRate * 100).toFixed(2) 
+            let click_rate = (item.exposeClickConversionRate * 100).toFixed(2)
+            let click_zhuanhua_rate = (item.clickPayConversionRate * 100).toFixed(2)
+            data.push([item.productSpuId, item.exposeNum, item.clickNum, item.goodsDetailVisitorNum, item.goodsDetailVisitNum, item.addToCartUserNum, item.collectUserNum,
+                item.payGoodsNum, item.payOrderNum, item.buyerNum, zhuanhua_rate, click_rate, click_zhuanhua_rate, item.searchExposeNum, item.searchClickNum, item.searchPayOrderNum,
+                item.searchPayGoodsNum, item.recommendExposeNum, item.recommendClickNum, item.recommendPayOrderNum, item.recommendPayGoodsNum
+            ])
+        })
+        // 转表格
+        let savePath = path.resolve(__dirname, './uploads')
+        console.log(savePath)
+        let date = new Date()
+        let fileName = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日-${mallid}temu数据分析表.xlsx`
+        let saveName = savePath + '/' + fileName
+        let wb = xlsx.utils.book_new()
+        let ws = xlsx.utils.aoa_to_sheet(data)
+        xlsx.utils.book_append_sheet(wb, ws, 'temu数据分析表')
+        xlsx.writeFile(wb, saveName)
+        res.send({
+            statu: 200,
+            url: 'http://192.168.188.77:8889/' + fileName,
+            savename: fileName
+        })
+    }
+})
+
+app.post('/getDataBySKU', async (req, res, next) => {
+    let data_arr = req.body.data.split('&')
+    console.log(req.body)
+    let searchData = {
+        "categoryList": [],
+        "permissionUser": "",
+        "currency": "CNY",
+        "lowCostStoreFlag": null,
+        "platformType": "AMAZON",
+        "countryList": [],
+        "marketList": [
+          43,
+          86,
+          44,
+          31,
+          82,
+          78,
+          39,
+          89,
+          27,
+          14,
+          1,
+          35,
+          32,
+          83,
+          79,
+          40,
+          90,
+          28,
+          15,
+          2,
+          36,
+          33,
+          84,
+          80,
+          41,
+          91,
+          29,
+          16,
+          3,
+          37,
+          34,
+          85,
+          81,
+          42,
+          92,
+          30,
+          17,
+          65,
+          38,
+          13,
+          4,
+          56,
+          18,
+          46,
+          68,
+          93,
+          5,
+          58,
+          19,
+          48,
+          70,
+          6,
+          57,
+          20,
+          47,
+          69,
+          7,
+          55,
+          21,
+          45,
+          67,
+          8,
+          59,
+          22,
+          49,
+          71,
+          9,
+          61,
+          23,
+          53,
+          73,
+          10,
+          62,
+          24,
+          52,
+          74,
+          11,
+          60,
+          25,
+          54,
+          72,
+          12,
+          63,
+          26,
+          51,
+          75,
+          66,
+          64,
+          50,
+          76,
+          87,
+          88,
+          77
+        ],
+        "platformMarketList": [],
+        "listingLevelList": [],
+        "listingStateList": [],
+        "listingTagList": [],
+        "productTagList": [],
+        "stateList": [
+          0
+        ],
+        "fulfillment": null,
+        "attributeItemIdList": [],
+        "keywordsSearch": {
+          "searchType": 1,
+          "skuList": [
+            data_arr[0]
+          ]
+        },
+        "managerType": "sellingManagerIdList",
+        "sellingManagerIdList": [],
+        "statisticsType": "day",
+        "sort": "todayUnit",
+        "order": "descend",
+        "page": 1,
+        "pagesize": 100
+    }
+    let url = 'https://gateway.apist.gerpgo.com/v3/statistics/dashboard/commodityReportParent'
+    const resp = await fetch(url, {
+        method: 'post',
+        body: JSON.stringify(searchData),
+        headers: {
+            'content-type': 'application/json',
+            'x-auth-token': req.body.token
+        }
+    }).then(res => res.json())
+    if (!resp.error) {
+        console.log(resp)
+        // 看拿到多少数据
+        if (!resp?.data?.rows.length) {
+            console.log('SKU有问题大概率是')
+            return
+        }
+        let countryProperty = {
+            "沙特阿拉伯": 'SA',
+            '巴西': 'BR',
+            '美国': 'US',
+            '英国': 'UK',
+            '德国': 'DE',
+            '墨西哥': 'MX',
+            '加拿大': 'CA',
+            '阿拉伯联合酋长国': 'AE',
+            '澳大利亚': 'AU',
+            '日本': 'JP',
+            '欧洲': 'EU',
+            '印度': 'IN'
+        }
+        let country_map = Object.keys(countryProperty).find(item => item.includes(data_arr[1]))
+        if (country_map) {
+            // 看看
+            let En_map = countryProperty[country_map]
+            // 循环结果找对应的亚马逊链接
+            let row = resp.data.rows.find(row => row.marketName.toUpperCase().includes(En_map))
+            // 直接去访问那个amazon
+            console.log(row, '找到啦')
+            res.send({
+                statu: 200,
+                data: row.asinUrl
+            })
+        }
+    }
+})
+// 拿飞书验证码的
+app.get('/api/oauth/callback', (req, res, next) => {
+    console.log(req.query,'kankan')
+    // 6DFtJa5KDG424D43EGA25a3x60KDf2zF
+})
+// 长连接建联
+wss.on('connection', (ws, req) => {
+console.log('新客户端已连接', req.url);
+if (req.url.includes('ip')) {
+    // 开始操作
+    let ip = req.url.split('ip=')[1]
+    // 存储
+    ip_poor[ip].clientId = ws
+}
+ws.send(JSON.stringify(ip_poor))
+
+// 接收前端消息
+ws.on('message', (data) => {
+    const msg = data.toString();
+    console.log('收到前端:', msg);
+    let resp = JSON.parse(msg)
+    if (resp.statu == 201) {
+        // 要提醒对应的ip了
+        let ip = resp.ip.split(' ')[0]
+        ip_poor[ip].clientId.send(JSON.stringify({
+            statu: 201,
+            msg: '我现在想要使用这个电脑'
+        }))
+    }
+    });
+
+    // 断开连接
+    ws.on('close', () => {
+        console.log('客户端断开');
+    });
+})
+
+
+// 用来接收当前谁登录了
+app.post('/vm/login', (req, res, next) => {
+    const { statu, ip } = req.body
+    console.log(ip, statu)
+    if (ip_poor[ip].statu != statu) {
+        ip_poor[ip].statu = statu
+    }
+    if (wss) {
+        wss.clients.forEach(client => {
+            client.send(JSON.stringify(ip_poor))
+        })
+    }
+})
+
 
 app.listen('8889',() => {
     console.log('Server is running on port 8889');
