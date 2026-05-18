@@ -69,7 +69,7 @@
             saveType = output_value ?? 'manual_screw'
             saveName = iptEl.value
             // 请求
-            xhr.open('POST', 'http://192.168.188.77:8889/getDianxiaomiPDF')
+            xhr.open('POST', 'http://192.168.188.16:8889/getDianxiaomiPDF')
             xhr.setRequestHeader('content-type', 'application/json')
             xhr.send(JSON.stringify({
                 saveName,

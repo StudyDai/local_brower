@@ -1795,8 +1795,211 @@ app.post('/vm/login', (req, res, next) => {
     }
 })
 
+// 用来请求页码数据返回
+app.post('/temu_file_page', async (req, res, next) => {
+    const { mallid, cookie } = req.body
+    let resp = await axios({
+        url: 'https://seller.kuajingmaihuo.com/api/merchant/file/export/history/page',
+        method: 'post',
+        data: JSON.stringify({
+            "taskType": 19,
+            "pageSize": 10,
+            "pageNum": 1
+        }),
+        headers: {
+            Mallid: mallid,
+            'content-type': 'application/json',
+            cookie
+        }
+    }).then(res => res.data)
+    if (resp.success) {
+        res.send({
+            code: 200,
+            data: resp.result.merchantMerchantFileExportHistoryList[0]
+        })
+    }
+})
+
+// 单独下载temu的一个表单
+app.post('/temu_file_sellerCenter', async (req, res, next) => {
+    const { mallid, cookie, id } = req.body
+    let resp = await axios({
+        url: "https://seller.kuajingmaihuo.com/api/merchant/file/export/download",
+        method: 'post',
+        data: JSON.stringify({
+            "taskType": 19,
+            id
+        }),
+        headers: {
+            Mallid: mallid,
+            'content-type': 'application/json',
+            cookie
+        }
+    }).then(res => res.data)
+    console.log(resp)
+    if (resp.success) {
+        // 返回
+        res.send({
+            code: 200,
+            data: resp
+        })
+    }
+})
 
 app.listen('8889',() => {
     console.log('Server is running on port 8889');
 })
+
+async function dianxiaomi_xlsx() {
+    let total_page = 1
+    let dd = []
+    let need_re_get = []
+    while(true) {
+        let url = `https://www.dianxiaomi.com/api/warehouseProduct/pageList.json`
+        let cookie = `tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F`
+        const resp = await axios({
+            url,
+            method: 'post',
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded',
+                'cookie': cookie
+            },
+            data: `refreshFlag=&zoneType=0&pageNo=${total_page}&pageSize=100&searchType=1&searchValue=&productSearchType=0&warehouseIds=8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1`
+        }).then(res => res.data)
+        // console.log(resp)
+        if (resp.msg == 'Successful') {
+            total_page++
+            console.log(total_page, resp.data.page.totalPage, resp.data.page.list.length)
+            // 拿到数据了
+            resp.data.page.list.forEach(li => {
+                if (li.productSku == 'RYP-ABMT052302-Wh' || li.productSku == 'RYP-GZH-Wh') {
+                    console.log('有咩有', li.availableStockNum)
+                }
+                dd.push({
+                    sku: li.productSku,
+                    name: li.name ?? "暂无",
+                    canuse: li.availableStockNum
+                })
+            })
+            // 如果已经等于了,直接退
+            if (total_page == resp.data.page.totalPage) {
+                // dd过滤先
+                let formatData = {}
+                // 过滤数据
+                dd.forEach(item => {
+                    let all_sku = Object.keys(formatData)
+                    if (all_sku.includes(item.sku)) {
+                        // 如果包含 那么就直接加
+                        formatData[item.sku].canuse += item.canuse
+                    } else {
+                        // 不包含, 则创建
+                        formatData[item.sku] = {
+                            sku: item.sku,
+                            name: item.name ?? "暂无",
+                            canuse: item.canuse
+                        }
+                    }
+                })
+                // 这个地方要开始进行填表了
+                let file_path = path.resolve(__dirname, 'uploads/店小秘本地库存.xlsx')
+                const result = fs.readFileSync(file_path)
+                const workbook = xlsx.read(result, { type: 'buffer' })
+                // 获取文件名称
+                const filename = workbook.SheetNames[0]
+                // 获取第一个工作表数据
+                const worksheet = workbook.Sheets[filename]
+                // 转化json格式
+                let jsondata = xlsx.utils.sheet_to_json(worksheet, { header: 1})
+                jsondata = jsondata.filter(row => row.some(r => r !== ''))
+                // 添加头信息
+                let date = new Date()
+                // 日期
+                let today = date.getDate()
+                // 年份
+                let year = date.getFullYear()
+                // 月份
+                let month = date.getMonth() + 1
+                // 如果日期加7大于这个月则
+                let maxThisMonth = new Date(year,month,0).getDate()
+                // 第二个时间
+                let second_month = month
+                let second_day = today + 7
+                if (second_day > maxThisMonth) {
+                    second_month = month + 1
+                    second_day -= maxThisMonth
+                }
+                // 头部 先加一列
+                jsondata[0].push(`本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`)
+                // 开始找对应的数据
+                jsondata.forEach((json, idx) => {
+                    if (!idx) {
+                        return
+                    }
+                    let current_sku = json[0]
+                    let findData = Object.keys(formatData).includes(current_sku)
+                    if (findData) {
+                        // 插入
+                        json.push(formatData[current_sku].canuse)
+                    } else {
+                        // 证明要重新请求
+                        console.log(current_sku)
+                        need_re_get.push(current_sku)
+                    }
+                })
+                // 搞定了 可以循环了
+                for (let index = 0; index < need_re_get.length - 1; index++) {
+                    const element = need_re_get[index];
+                    console.log(element)
+                    // 请求下
+                    let url = `https://www.dianxiaomi.com/api/warehouseProduct/pageList.json`
+                    let cookie = `tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F`
+                    const resp = await axios({
+                        url,
+                        method: 'post',
+                        headers: {
+                            'content-type': 'application/x-www-form-urlencoded',
+                            'cookie': cookie
+                        },
+                        data: `refreshFlag=&zoneType=0&pageNo=1&pageSize=100&searchType=1&searchValue=${element}&productSearchType=0&warehouseIds=8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1`
+                    }).then(res => res.data)
+                    if (resp.msg == 'Successful') { 
+                        let total_num = 0;
+                        let score_data = null;
+                        score_data = jsondata.find((json, idx) => json[0] == element)
+                        if ((resp.data.page.list instanceof Array) && (!resp.data.page.list.length)) {
+                            if (score_data) {
+                                score_data.push(0)
+                            }
+                        } else if ((resp.data.page.list instanceof Array) && resp.data.page.list.length) {
+                            if (score_data) {
+                                resp.data.page.list.forEach(item => {
+                                    total_num += item.availableStockNum 
+                                })
+                                score_data.push(total_num)
+                            }
+                        } else {
+                            if (score_data) {
+                                score_data.push(resp.data.page.list.availableStockNum)
+                            }
+                        }
+                    }
+                }
+                // 输出为xlsx
+                const wb = new xlsx.utils.book_new()
+                const ws = new xlsx.utils.aoa_to_sheet(jsondata)
+                xlsx.utils.book_append_sheet(wb, ws, '店小秘库存表')
+                file_path = path.resolve(__dirname, 'uploads/店小秘本地库存01.xlsx')
+                xlsx.writeFile(wb, file_path)
+                break;
+            } else {
+                await delayFn()
+            }
+            // 看看结果是什么
+            // 地方直接导出表也行
+        } else {
+            break
+        }
+    }
+}
+dianxiaomi_xlsx()
 
