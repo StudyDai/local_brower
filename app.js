@@ -468,11 +468,11 @@ var md5 = function (string) {
     return temp.toLowerCase();
 }
 // const httpsServer = https.createServer(options, app)
-function delayFn() {
+async function delayFn(time) {
     return new Promise((resolve, reject) => {
         setTimeout(() => {
             resolve('delayed response')
-        }, 1500)
+        }, time)
     })
 }
 app.use(cors())
@@ -1528,45 +1528,152 @@ app.post('/download_temu_fenxi', async function (req, res, next) {
     myHeader.append('Content-Type', 'application/json')
     myHeader.append('mallid', mallid)
     myHeader.append('cookie', cookie)
-    const resp = await fetch(url, {
-        method: 'post',
-        body: JSON.stringify({
-            "pageSize": 100,
-            "pageNum": 1,
-            "timeDimension": 4
-        }),
-        headers: myHeader
-    }).then(res => res.json())
-    if (resp.success) {
-        // 开始格式化
-        let data = [['spu', '曝光量', '点击量', '访客数', '浏览量', '加购人数', '收藏人数', '支付件数', '支付订单数', '买家数', '转化率', '点击率', '点击转化率',
-            '搜索数据-曝光量', '搜索数据-点击量', '搜索数据-支付订单数', '搜索数据-支付件数', '推荐数据-曝光量', '推荐数据-点击量', '推荐数据-支付订单数', "推荐数据-支付件数"
-        ]]
-        resp.result.list.forEach(item => {
-            let zhuanhua_rate = (item.exposePayConversionRate * 100).toFixed(2) 
-            let click_rate = (item.exposeClickConversionRate * 100).toFixed(2)
-            let click_zhuanhua_rate = (item.clickPayConversionRate * 100).toFixed(2)
-            data.push([item.productSpuId, item.exposeNum, item.clickNum, item.goodsDetailVisitorNum, item.goodsDetailVisitNum, item.addToCartUserNum, item.collectUserNum,
-                item.payGoodsNum, item.payOrderNum, item.buyerNum, zhuanhua_rate, click_rate, click_zhuanhua_rate, item.searchExposeNum, item.searchClickNum, item.searchPayOrderNum,
-                item.searchPayGoodsNum, item.recommendExposeNum, item.recommendClickNum, item.recommendPayOrderNum, item.recommendPayGoodsNum
-            ])
-        })
-        // 转表格
-        let savePath = path.resolve(__dirname, './uploads')
-        console.log(savePath)
-        let date = new Date()
-        let fileName = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日-${mallid}temu数据分析表.xlsx`
-        let saveName = savePath + '/' + fileName
-        let wb = xlsx.utils.book_new()
-        let ws = xlsx.utils.aoa_to_sheet(data)
-        xlsx.utils.book_append_sheet(wb, ws, 'temu数据分析表')
-        xlsx.writeFile(wb, saveName)
-        res.send({
-            statu: 200,
-            url: 'http://192.168.188.77:8889/' + fileName,
-            savename: fileName
-        })
+    async function getData() {
+        const resp = await fetch(url, {
+            method: 'post',
+            body: JSON.stringify({
+                "pageSize": 100,
+                "pageNum": 1,
+                "timeDimension": 4
+            }),
+            headers: myHeader
+        }).then(res => res.json())
+        if (resp.success) {
+            // 开始格式化
+            let data = [[
+                '产品标题',
+                'spu',
+                '曝光量', '近三十天曝光量上涨趋势',
+                '点击量', '近三十天点击量上涨趋势',
+                '访客数', '近三十天访客数上涨趋势',
+                '浏览量', '近三十天浏览量上涨趋势',
+                '加购人数', '近三十天加购人数上涨趋势',
+                '收藏人数', '近三十天收藏人数上涨趋势',
+                '支付件数', '近三十天支付件数上涨趋势',
+                '支付订单数', '近三十天支付订单数上涨趋势',
+                '买家数', '近三十天买家数上涨趋势',
+                '转化率', '近三十天转化率上涨趋势',
+                '点击率', '近三十天点击率上涨趋势',
+                '点击转化率', '近三十天点击转化率上涨趋势',
+                '搜索数据-曝光量', '近三十天搜索数据-曝光量上涨趋势',
+                '搜索数据-点击量', '近三十天搜索数据-点击量上涨趋势',
+                '搜索数据-支付订单数', '近三十天搜索数据-支付订单数上涨趋势',
+                '搜索数据-支付件数', '近三十天搜索数据-支付件数上涨趋势',
+                '推荐数据-曝光量', '近三十天推荐数据-曝光量上涨趋势',
+                '推荐数据-点击量', '近三十天推荐数据-点击量上涨趋势',
+                '推荐数据-支付订单数', '近三十天推荐数据-支付订单数上涨趋势',
+                '推荐数据-支付件数', '近三十天推荐数据-支付件数上涨趋势'
+            ]]
+            resp.result.list.forEach(item => {
+                let zhuanhua_rate = (item.exposePayConversionRate * 100).toFixed(2) 
+                let click_rate = (item.exposeClickConversionRate * 100).toFixed(2)
+                let click_zhuanhua_rate = (item.clickPayConversionRate * 100).toFixed(2)
+                data.push([
+                    item.goodsName,
+                    item.productSpuId,
+            
+                    // 曝光量
+                    item.exposeNum,
+                    (item.exposeNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 点击量
+                    item.clickNum,
+                    (item.clickNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 访客数
+                    item.goodsDetailVisitorNum,
+                    (item.goodsDetailVisitorNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 浏览量
+                    item.goodsDetailVisitNum,
+                    (item.goodsDetailVisitNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 加购人数
+                    item.addToCartUserNum,
+                    (item.addToCartUserNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 收藏人数
+                    item.collectUserNum,
+                    (item.collectUserNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 支付件数
+                    item.payGoodsNum,
+                    (item.payGoodsNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 支付订单数
+                    item.payOrderNum,
+                    (item.payOrderNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 买家数
+                    item.buyerNum,
+                    (item.buyerNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // ==============================
+                    // 重点：3个率的趋势 从 item 直接拿！
+                    // ==============================
+                    zhuanhua_rate,
+                    (item.exposePayConversionRateLinkRelative * 100).toFixed(2) + '%',
+            
+                    click_rate,
+                    (item.exposeClickConversionRateLinkRelative * 100).toFixed(2) + '%',
+            
+                    click_zhuanhua_rate,
+                    (item.clickPayConversionRateLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 搜索-曝光量
+                    item.searchExposeNum,
+                    (item.searchExposeNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 搜索-点击量
+                    item.searchClickNum,
+                    (item.searchClickNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 搜索-支付订单数
+                    item.searchPayOrderNum,
+                    (item.searchPayOrderNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 搜索-支付件数
+                    item.searchPayGoodsNum,
+                    (item.searchPayGoodsNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 推荐-曝光量
+                    item.recommendExposeNum,
+                    (item.recommendExposeNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 推荐-点击量
+                    item.recommendClickNum,
+                    (item.recommendClickNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 推荐-支付订单数
+                    item.recommendPayOrderNum,
+                    (item.recommendPayOrderNumLinkRelative * 100).toFixed(2) + '%',
+            
+                    // 推荐-支付件数
+                    item.recommendPayGoodsNum,
+                    (item.recommendPayGoodsNumLinkRelative * 100).toFixed(2) + '%'
+                ]);
+            })
+            // 转表格
+            let savePath = path.resolve(__dirname, './uploads')
+            console.log(savePath)
+            let date = new Date()
+            let fileName = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日-${mallid}temu数据分析表.xlsx`
+            let saveName = savePath + '/' + fileName
+            let wb = xlsx.utils.book_new()
+            let ws = xlsx.utils.aoa_to_sheet(data)
+            xlsx.utils.book_append_sheet(wb, ws, 'temu数据分析表')
+            xlsx.writeFile(wb, saveName)
+            res.send({
+                statu: 200,
+                url: 'http://192.168.188.16:8889/' + fileName,
+                savename: fileName
+            })
+        } else {
+            await delayFn()
+            await getData()
+        }
     }
+    await getData()
 })
 
 app.post('/getDataBySKU', async (req, res, next) => {
@@ -1850,6 +1957,256 @@ app.listen('8889',() => {
     console.log('Server is running on port 8889');
 })
 
+// dianxiaomi_xlsx()
+
+// 合并
+function compareData(obj) {
+    let str = ''
+    for([key, value] of Object.entries(obj)) {
+        console.log(key, value)
+        str += `&${key}=${value}`
+    }
+    return str.slice(1)
+}
+
+// 获取领星库存
+async function getLingXingData() {
+    return new Promise(async resolve => {
+        // 这个地方开始去拿海外仓的
+        let lingxingUrl = 'https://gw.lingxingerp.com/universal/storage/api/universal/export'
+        let resp = await axios({
+            url: lingxingUrl,
+            method: 'POST',
+            headers: {
+                'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
+                'x-ak-company-id': "90136231189725184",
+                'content-type': 'application/json;charset=UTF-8'
+            },
+            data: JSON.stringify({
+                "attributes": [],
+                "principalList": [],
+                "productUids": [],
+                "searchField": "sku",
+                "pageNo": 1,
+                "pageSize": 20,
+                "seniorSearchList": [],
+                "isMultiPlatform": true,
+                "selectedFields": [
+                    "sku",
+                    "usedNum",
+                    "afnInboundShippedNum",
+                    "warehouseNames"
+                ],
+                "hasParentRow": false,
+                "hasChildrenRow": true,
+                "hasGrandsonRow": false,
+                "req_time_sequence": "/universal/storage/api/universal/export$$1"
+            })
+        }).then(res => res.data)
+        console.log(resp)
+        if (resp.msg == 'success') {
+            await delayFn(20000)
+            // 进行第二步
+            let file_url = 'https://erp.lingxing.com/api/download/downloadCenterReport/getReportData?' + compareData({
+                offset: 0,
+                length: 20,
+                report_time_type: 0,
+                start_time: '2026-05-22',
+                end_time: '2026-05-29',
+                req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
+            })
+            let resp = await axios({
+                method: 'GET',
+                url: file_url,
+                headers: {
+                    'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
+                    'x-ak-company-id': "90136231189725184"
+                }
+            }).then(res => res.data)
+            console.log(resp)
+            if (resp.msg == 'success') {
+                // 等待十秒
+                if (resp.data.total > 0) {
+                    let prev_data = resp.data.list[0]
+                    let file_url = `https://erp.lingxing.com/api/download/downloadCenterReport/downloadResource?report_id=${prev_data.report_id}`
+                    resp = await axios({
+                        method: 'GET',
+                        url: file_url,
+                        headers: {
+                            'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
+                            'x-ak-company-id': "90136231189725184"
+                        },
+                        responseType: 'arraybuffer'
+                    }).then(res => res.data)
+                    fs.writeFile(path.resolve(__dirname, 'uploads/领星全仓明细表.xlsx'), resp, (err) => {
+                        if (err) {
+                            console.log("出问题了", err)
+                            return
+                        }
+                        console.log('下载成功')
+                        resolve("成功啦")
+                    })
+                }
+
+            }
+        }
+    })
+}
+// 保存映射
+let warehouse_map = {}
+// 读文本内容
+function readXlsx(url) {
+    let data_buffer = fs.readFileSync(url)
+    let workbook = xlsx.read(data_buffer, { type: 'buffer' })
+    let workname = workbook.SheetNames[0]
+    let worksheet = workbook.Sheets[workname]
+    let jsondata = xlsx.utils.sheet_to_json(worksheet, { header: 1 })
+    return jsondata
+}
+
+async function saveFile() {
+    return new Promise(async resolve => {
+        let jsondata = readXlsx(path.resolve(__dirname, 'uploads/仓库映射表.xlsx'))
+        if (jsondata.length) {
+            jsondata = jsondata.slice(1)
+            jsondata.forEach(arr => warehouse_map[arr[0]] = arr[1])
+        }
+        // 添加头信息
+        let date = new Date()
+        // 日期
+        let today = date.getDate()
+        // 年份
+        let year = date.getFullYear()
+        // 月份
+        let month = date.getMonth() + 1
+        // 如果日期加7大于这个月则
+        let maxThisMonth = new Date(year,month,0).getDate()
+        // 第二个时间
+        let second_month = month
+        let second_day = today + 7
+        if (second_day > maxThisMonth) {
+            second_month = month + 1
+            second_day -= maxThisMonth
+        }
+        // 现在有数据了 要分三个表 本地 FBA 海外仓
+        let local_excel = []
+        let FBA_excel = []
+        let warehouse_excel = []
+        let goway_excel = []
+        let warehouse_goway_excel = []
+        local_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
+        FBA_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
+        warehouse_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
+        goway_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
+        warehouse_goway_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
+        
+        // 这一块是拿大头数据的 包括FBA的在途
+        await getLingXingData()
+        // 读文件
+        const lingxing_data = readXlsx(path.resolve(__dirname, 'uploads/领星全仓明细表.xlsx'))
+        if (lingxing_data.length > 1) {
+            lingxing_data.forEach((data, index) => {
+                if (!index) return
+                let warehouse_type = data[1];
+                switch (warehouse_map[warehouse_type]) {
+                    case "本地":
+                        local_excel.push([data[0], data[3], data[1]])
+                        break;
+                    case "FBA仓":
+                        FBA_excel.push([data[0], data[3], data[1]])
+                        if (data[4]) {
+                            goway_excel.push([data[0], data[4], data[1]])
+                        }
+                        break;
+                    case "海外仓":
+                        warehouse_excel.push([data[0], data[3], data[1]])
+                        break;
+                    default:
+                        console.log("不是正常的仓库")
+                }
+            })
+        }
+
+        // 这一块是单拎海外仓的在途
+        let warehouse_url = 'https://erp.lingxing.com/api/wmsi/overseas/inventory_compare/exportInventoryCompareList'
+        resp = await axios({
+            url: warehouse_url,
+            method: "POST",
+            headers: {
+                'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
+                'x-ak-company-id': "90136231189725184",
+                'content-type': 'application/json;charset=UTF-8'
+            },
+            data: JSON.stringify({
+                "search_field": "sku",
+                "offset": 0,
+                "length": 20,
+                "req_time_sequence": "/api/wmsi/overseas/inventory_compare/exportInventoryCompareList$$2"
+            })
+        }).then(res => res.data)
+        if (resp.msg == 'success') {
+            await delayFn(20000)
+            // 去拿
+            let file_url = 'https://erp.lingxing.com/api/download/downloadCenterReport/getReportData?' + compareData({
+                offset: 0,
+                length: 20,
+                report_time_type: 0,
+                start_time: '2026-05-22',
+                end_time: '2026-05-29',
+                req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
+            })
+            let resp = await axios({
+                method: 'GET',
+                url: file_url,
+                headers: {
+                    'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
+                    'x-ak-company-id': "90136231189725184"
+                }
+            }).then(res => res.data)
+            if (resp.msg == 'success') {
+                // 等待十秒
+                if (resp.data.total > 0) {
+                    let prev_data = resp.data.list[0]
+                    let file_url = `https://erp.lingxing.com/api/download/downloadCenterReport/downloadResource?report_id=${prev_data.report_id}`
+                    resp = await axios({
+                        method: 'GET',
+                        url: file_url,
+                        headers: {
+                            'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
+                            'x-ak-company-id': "90136231189725184"
+                        },
+                        responseType: 'arraybuffer'
+                    }).then(res => res.data)
+                    try {
+                        fs.writeFileSync(path.resolve(__dirname, 'uploads/领星海外仓明细表.xlsx'), resp)
+                    } catch (err) {
+                        console.log("出错啦~", err)
+                        resolve("出错啦")
+                    }
+                }
+
+            }
+        }
+        const warehouse_data = readXlsx(path.resolve(__dirname, 'uploads/领星海外仓明细表.xlsx'))
+        warehouse_data.forEach((ware, index) => {
+            if(!index) return
+            if (ware[15]) {
+                warehouse_goway_excel.push([ware[0], ware[15], ware[6]])
+            } else {
+                warehouse_goway_excel.push([ware[0], ware[16], ware[6]])
+            }
+        })
+        // 格式化
+        resolve({
+            local_excel,
+            FBA_excel,
+            warehouse_excel,
+            goway_excel,
+            warehouse_goway_excel
+        })
+    })
+}
+// getLingXingData()
 async function dianxiaomi_xlsx() {
     let total_page = 1
     let dd = []
@@ -1989,10 +2346,19 @@ async function dianxiaomi_xlsx() {
                 const ws = new xlsx.utils.aoa_to_sheet(jsondata)
                 xlsx.utils.book_append_sheet(wb, ws, '店小秘库存表')
                 file_path = path.resolve(__dirname, 'uploads/店小秘本地库存01.xlsx')
+                const { local_excel, FBA_excel, warehouse_excel, goway_excel, warehouse_goway_excel } = await saveFile()
+                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(local_excel.concat(FBA_excel.slice(1),warehouse_excel.slice(1))), '总库存表')
+                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(local_excel), '本地仓库库存表')
+                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(FBA_excel), 'FBA库存表')
+                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(warehouse_excel), '海外仓库存表')
+                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(goway_excel), 'FBA在途库存表')
+                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(warehouse_goway_excel), '海外仓在途库存表')
+                // 总库存
                 xlsx.writeFile(wb, file_path)
+                console.log("成了,打开看看吧")
                 break;
             } else {
-                await delayFn()
+                await delayFn(500)
             }
             // 看看结果是什么
             // 地方直接导出表也行
@@ -2002,4 +2368,3 @@ async function dianxiaomi_xlsx() {
     }
 }
 dianxiaomi_xlsx()
-
