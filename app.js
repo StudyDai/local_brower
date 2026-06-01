@@ -1927,6 +1927,45 @@ app.post('/temu_file_page', async (req, res, next) => {
     }
 })
 
+function getAllDate(date = new Date()) {
+    let year = date.getFullYear()
+    let month = date.getMonth()
+    let today = date.getDate()
+    let start_Time = new Date(year, month, 1, 0, 0, 0)
+    let end_Time = new Date(year, month, 0, 23, 59, 59)
+    return {
+        start_Time,
+        end_Time
+    }
+}
+
+// 用来先拉到整个月的数据
+app.post('/temu_file_click', async (req, res, next) => {
+    const { mallid, cookie } = req.body
+    const { start_Time, end_Time } = getAllDate()
+    let resp = await axios({
+        url: 'https://seller.kuajingmaihuo.com/api/merchant/file/export',
+        method: 'post',
+        data: JSON.stringify({
+            "fundDetailExport": true,
+            "taskType": 19,
+            "beginTime": start_Time,
+            "endTime": end_Time
+        }),
+        headers: {
+            Mallid: mallid,
+            'content-type': 'application/json',
+            cookie
+        }
+    }).then(res => res.data)
+    if (resp.success) {
+        res.send({
+            code: 200,
+            data: "成功触发任务"
+        })
+    }
+})
+
 // 单独下载temu的一个表单
 app.post('/temu_file_sellerCenter', async (req, res, next) => {
     const { mallid, cookie, id } = req.body
@@ -2011,8 +2050,8 @@ async function getLingXingData() {
                 offset: 0,
                 length: 20,
                 report_time_type: 0,
-                start_time: '2026-05-22',
-                end_time: '2026-05-29',
+                start_time: '2026-05-24',
+                end_time: '2026-05-31',
                 req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
             })
             let resp = await axios({
@@ -2151,8 +2190,8 @@ async function saveFile() {
                 offset: 0,
                 length: 20,
                 report_time_type: 0,
-                start_time: '2026-05-22',
-                end_time: '2026-05-29',
+                start_time: '2026-05-24',
+                end_time: '2026-05-31',
                 req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
             })
             let resp = await axios({
@@ -2367,4 +2406,4 @@ async function dianxiaomi_xlsx() {
         }
     }
 }
-dianxiaomi_xlsx()
+// dianxiaomi_xlsx()
