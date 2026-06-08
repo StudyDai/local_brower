@@ -16,7 +16,9 @@ let windows = Window.all();
 const tesseract = require('tesseract.js');
 const serveIndex = require('serve-index');
 const { pdfToPng } = require('pdf-to-png-converter');
-const warehouse_list = require('./warehouse_map.json')
+const warehouse_list = require('./warehouse_map.json');
+const Config = require("./config/config.json")
+const CryptoJS = require('crypto-js');
 // 这个地方调用下xlsx吧
 let xlData = [['操作参数(1点击,2双击,3滚动,4复制,5粘贴,6长按, 7等待, 8自定义, 9移动， 10自定义鼠标操作', '时长/滚动距离', '操作的图片路径']]
 // 循环
@@ -1930,8 +1932,7 @@ app.post('/temu_file_page', async (req, res, next) => {
 function getAllDate(date = new Date()) {
     let year = date.getFullYear()
     let month = date.getMonth()
-    let today = date.getDate()
-    let start_Time = new Date(year, month, 1, 0, 0, 0)
+    let start_Time = new Date(year, month - 1, 1, 0, 0, 0)
     let end_Time = new Date(year, month, 0, 23, 59, 59)
     return {
         start_Time,
@@ -1939,6 +1940,7 @@ function getAllDate(date = new Date()) {
     }
 }
 
+console.log(getAllDate().start_Time.getTime())
 // 用来先拉到整个月的数据
 app.post('/temu_file_click', async (req, res, next) => {
     const { mallid, cookie } = req.body
@@ -1949,8 +1951,8 @@ app.post('/temu_file_click', async (req, res, next) => {
         data: JSON.stringify({
             "fundDetailExport": true,
             "taskType": 19,
-            "beginTime": start_Time,
-            "endTime": end_Time
+            "beginTime": start_Time.getTime(),
+            "endTime": end_Time.getTime()
         }),
         headers: {
             Mallid: mallid,
@@ -1958,10 +1960,16 @@ app.post('/temu_file_click', async (req, res, next) => {
             cookie
         }
     }).then(res => res.data)
+    console.log(resp, "我是创建任务")
     if (resp.success) {
         res.send({
             code: 200,
             data: "成功触发任务"
+        })
+    } else if (resp.errorMsg == "当前筛选条件的导出任务已创建, 请勿重复创建") {
+        res.send({
+            code: 300,
+            data: "已存在任务"
         })
     }
 })
@@ -1996,414 +2004,896 @@ app.listen('8889',() => {
     console.log('Server is running on port 8889');
 })
 
-// dianxiaomi_xlsx()
-
-// 合并
-function compareData(obj) {
-    let str = ''
-    for([key, value] of Object.entries(obj)) {
-        console.log(key, value)
-        str += `&${key}=${value}`
+/************************** 2. 全局配置管理（所有硬编码统一管理） **************************/
+const CONFIG = {
+    // 领星ERP配置
+    lingXing: {
+      authToken: Config.auth_token,
+      companyId: '90136231189725184',
+      baseUrl: 'https://erp.lingxing.com',
+      gwBaseUrl: 'https://gw.lingxingerp.com',
+      // 接口请求超时时间
+      timeout: 30000,
+      // 导出后等待时间（ms）
+      exportWaitTime: {
+        default: 10000,
+        overseas: 20000
+      }
+    },
+    // 店小秘配置
+    dianXiaoMi: {
+      baseUrl: 'https://www.dianxiaomi.com',
+      cookie: 'tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F',
+      warehouseIds: '8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808',
+      pageSize: 100,
+      timeout: 30000
+    },
+    // 文件路径配置
+    filePath: {
+      uploadDir: path.resolve(__dirname, 'uploads'),
+      warehouseMap: path.resolve(__dirname, 'uploads/仓库映射表.xlsx'),
+      dianXiaoMiTemplate: path.resolve(__dirname, 'uploads/店小秘本地库存.xlsx'),
+      lingXingAllStock: path.resolve(__dirname, 'uploads/领星全仓明细表.xlsx'),
+      lingXingPrice: path.resolve(__dirname, 'uploads/领星货品单价明细表.xlsx'),
+      lingXingOverseasStock: path.resolve(__dirname, 'uploads/领星海外仓明细表.xlsx'),
+      output: path.resolve(__dirname, 'uploads/店小秘本地库存01.xlsx')
+    },
+    postPath: {
+        secret_key_api: "https://gw.lingxingerp.com/newadmin/api/passport/getLoginSecretKey",
+        user_login_api: "https://gw.lingxingerp.com/newadmin/api/passport/login",
+    },
+    // 仓库类型映射
+    warehouseTypeMap: {
+      LOCAL: '本地',
+      FBA: 'FBA仓',
+      OVERSEAS: '海外仓'
+    },
+    // 参考表,生成表
+    output: {
+        template_path: path.resolve(__dirname, 'uploads/店小秘本地库存.xlsx'),
+        generated_path: path.resolve(__dirname, 'uploads/店小秘本地库存01.xlsx')
     }
-    return str.slice(1)
 }
 
-// 获取领星库存
-async function getLingXingData() {
-    return new Promise(async resolve => {
-        // 这个地方开始去拿海外仓的
-        let lingxingUrl = 'https://gw.lingxingerp.com/universal/storage/api/universal/export'
-        let resp = await axios({
-            url: lingxingUrl,
-            method: 'POST',
-            headers: {
-                'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
-                'x-ak-company-id': "90136231189725184",
-                'content-type': 'application/json;charset=UTF-8'
-            },
-            data: JSON.stringify({
-                "attributes": [],
-                "principalList": [],
-                "productUids": [],
-                "searchField": "sku",
-                "pageNo": 1,
-                "pageSize": 20,
-                "seniorSearchList": [],
-                "isMultiPlatform": true,
-                "selectedFields": [
-                    "sku",
-                    "usedNum",
-                    "afnInboundShippedNum",
-                    "warehouseNames"
-                ],
-                "hasParentRow": false,
-                "hasChildrenRow": true,
-                "hasGrandsonRow": false,
-                "req_time_sequence": "/universal/storage/api/universal/export$$1"
-            })
-        }).then(res => res.data)
-        console.log(resp)
-        if (resp.msg == 'success') {
-            await delayFn(20000)
-            // 进行第二步
-            let file_url = 'https://erp.lingxing.com/api/download/downloadCenterReport/getReportData?' + compareData({
-                offset: 0,
-                length: 20,
-                report_time_type: 0,
-                start_time: '2026-05-24',
-                end_time: '2026-05-31',
-                req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
-            })
-            let resp = await axios({
-                method: 'GET',
-                url: file_url,
-                headers: {
-                    'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
-                    'x-ak-company-id': "90136231189725184"
-                }
-            }).then(res => res.data)
-            console.log(resp)
-            if (resp.msg == 'success') {
-                // 等待十秒
-                if (resp.data.total > 0) {
-                    let prev_data = resp.data.list[0]
-                    let file_url = `https://erp.lingxing.com/api/download/downloadCenterReport/downloadResource?report_id=${prev_data.report_id}`
-                    resp = await axios({
-                        method: 'GET',
-                        url: file_url,
-                        headers: {
-                            'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
-                            'x-ak-company-id': "90136231189725184"
-                        },
-                        responseType: 'arraybuffer'
-                    }).then(res => res.data)
-                    fs.writeFile(path.resolve(__dirname, 'uploads/领星全仓明细表.xlsx'), resp, (err) => {
-                        if (err) {
-                            console.log("出问题了", err)
-                            return
-                        }
-                        console.log('下载成功')
-                        resolve("成功啦")
-                    })
-                }
+/************************** 3. 通用工具函数 **************************/
 
-            }
-        }
-    })
-}
-// 保存映射
-let warehouse_map = {}
-// 读文本内容
-function readXlsx(url) {
-    let data_buffer = fs.readFileSync(url)
-    let workbook = xlsx.read(data_buffer, { type: 'buffer' })
-    let workname = workbook.SheetNames[0]
-    let worksheet = workbook.Sheets[workname]
-    let jsondata = xlsx.utils.sheet_to_json(worksheet, { header: 1 })
-    return jsondata
+/**
+ * 日期格式化工具：转成 yyyy-mm-dd 格式
+ * @param {Date} date 日期对象
+ * @returns {string} 格式化后的日期
+ */
+const formatDateToYMD = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
+ * 获取7天前后的日期范围
+ * @param {Date} date 基准日期，默认今天
+ * @returns {Object} { start_Time: 7天前, end_Time: 基准日期 } 格式均为 yyyy-mm-dd
+ */
+const getSevenDate = (date = new Date()) => {
+  const endTime = new Date(date);
+  const startTime = new Date(date);
+  startTime.setDate(startTime.getDate() - 7);
+
+  return {
+    start_Time: formatDateToYMD(startTime),
+    end_Time: formatDateToYMD(endTime)
+  };
+};
+
+/**
+ * 获取库存表头的日期范围文本
+ * @returns {string} 格式：mmdd-mmdd
+ */
+const getStockHeaderDateText = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = now.getMonth() + 1;
+  const today = now.getDate();
+  const maxThisMonth = new Date(year, month, 0).getDate();
+
+  let secondMonth = month;
+  let secondDay = today + 7;
+  if (secondDay > maxThisMonth) {
+    secondMonth = month + 1;
+    secondDay -= maxThisMonth;
+  }
+
+  const formatMonthDay = (m, d) => `${String(m).padStart(2, '0')}${String(d).padStart(2, '0')}`;
+  return `${formatMonthDay(month, today)}-${formatMonthDay(secondMonth, secondDay)}`;
+};
+
+/**
+ * 对象转URL查询参数
+ * @param {Object} obj 要转换的对象
+ * @returns {string} 拼接后的查询字符串
+ */
+const compareData = (obj) => {
+  return Object.entries(obj)
+    .map(([key, value]) => `${key}=${value}`)
+    .join('&');
+};
+
+
+const encryptData = (data, secret_key) => {
+    return CryptoJS.AES.encrypt(data, CryptoJS.enc.Utf8.parse(secret_key), {
+        mode: CryptoJS.mode.ECB,
+        padding: CryptoJS.pad.Pkcs7
+    }).toString();
 }
 
-async function saveFile() {
-    return new Promise(async resolve => {
-        let jsondata = readXlsx(path.resolve(__dirname, 'uploads/仓库映射表.xlsx'))
-        if (jsondata.length) {
-            jsondata = jsondata.slice(1)
-            jsondata.forEach(arr => warehouse_map[arr[0]] = arr[1])
-        }
-        // 添加头信息
-        let date = new Date()
-        // 日期
-        let today = date.getDate()
-        // 年份
-        let year = date.getFullYear()
-        // 月份
-        let month = date.getMonth() + 1
-        // 如果日期加7大于这个月则
-        let maxThisMonth = new Date(year,month,0).getDate()
-        // 第二个时间
-        let second_month = month
-        let second_day = today + 7
-        if (second_day > maxThisMonth) {
-            second_month = month + 1
-            second_day -= maxThisMonth
-        }
-        // 现在有数据了 要分三个表 本地 FBA 海外仓
-        let local_excel = []
-        let FBA_excel = []
-        let warehouse_excel = []
-        let goway_excel = []
-        let warehouse_goway_excel = []
-        local_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
-        FBA_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
-        warehouse_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
-        goway_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
-        warehouse_goway_excel.push(["公司sku", `本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`, '仓库名称'])
-        
-        // 这一块是拿大头数据的 包括FBA的在途
-        await getLingXingData()
-        // 读文件
-        const lingxing_data = readXlsx(path.resolve(__dirname, 'uploads/领星全仓明细表.xlsx'))
-        if (lingxing_data.length > 1) {
-            lingxing_data.forEach((data, index) => {
-                if (!index) return
-                let warehouse_type = data[1];
-                switch (warehouse_map[warehouse_type]) {
-                    case "本地":
-                        local_excel.push([data[0], data[3], data[1]])
-                        break;
-                    case "FBA仓":
-                        FBA_excel.push([data[0], data[3], data[1]])
-                        if (data[4]) {
-                            goway_excel.push([data[0], data[4], data[1]])
-                        }
-                        break;
-                    case "海外仓":
-                        warehouse_excel.push([data[0], data[3], data[1]])
-                        break;
-                    default:
-                        console.log("不是正常的仓库")
-                }
-            })
-        }
+/************************** 4. Excel工具函数 **************************/
+/**
+ * 读取Excel文件并转为JSON数组
+ * @param {string} filePath 文件路径
+ * @param {number} sheetIndex 要读取的sheet索引，默认0
+ * @returns {Array<Array>} 二维数组格式的Excel数据
+ */
+const readXlsx = (filePath, sheetIndex = 0) => {
+    try {
+      const dataBuffer = fs.readFileSync(filePath);
+      const workbook = xlsx.read(dataBuffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[sheetIndex];
+      const worksheet = workbook.Sheets[sheetName];
+      return xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    } catch (error) {
+      console.error(`读取Excel文件失败: ${filePath}`, error);
+      throw error;
+    }
+};
 
-        // 这一块是单拎海外仓的在途
-        let warehouse_url = 'https://erp.lingxing.com/api/wmsi/overseas/inventory_compare/exportInventoryCompareList'
-        resp = await axios({
-            url: warehouse_url,
-            method: "POST",
-            headers: {
-                'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
-                'x-ak-company-id': "90136231189725184",
-                'content-type': 'application/json;charset=UTF-8'
-            },
-            data: JSON.stringify({
-                "search_field": "sku",
-                "offset": 0,
-                "length": 20,
-                "req_time_sequence": "/api/wmsi/overseas/inventory_compare/exportInventoryCompareList$$2"
-            })
-        }).then(res => res.data)
-        if (resp.msg == 'success') {
-            await delayFn(20000)
-            // 去拿
-            let file_url = 'https://erp.lingxing.com/api/download/downloadCenterReport/getReportData?' + compareData({
-                offset: 0,
-                length: 20,
-                report_time_type: 0,
-                start_time: '2026-05-24',
-                end_time: '2026-05-31',
-                req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
-            })
-            let resp = await axios({
-                method: 'GET',
-                url: file_url,
-                headers: {
-                    'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
-                    'x-ak-company-id': "90136231189725184"
-                }
-            }).then(res => res.data)
-            if (resp.msg == 'success') {
-                // 等待十秒
-                if (resp.data.total > 0) {
-                    let prev_data = resp.data.list[0]
-                    let file_url = `https://erp.lingxing.com/api/download/downloadCenterReport/downloadResource?report_id=${prev_data.report_id}`
-                    resp = await axios({
-                        method: 'GET',
-                        url: file_url,
-                        headers: {
-                            'Auth-Token': 'a837xu2cXxIuuhwU6FK7x9X2UOoetAVuashGy+X1y5+qxedpe+ZqAbzMCzbj2kqzPB16lufNCUNaAp91kUOEWWzHUPX/bs3wA3IaVv3Zy8V/Cnp9YI6U869X+tiW4tsg7B6w8l8WUIBgUHrG0g7qE6sAaPe+dz7o',
-                            'x-ak-company-id': "90136231189725184"
-                        },
-                        responseType: 'arraybuffer'
-                    }).then(res => res.data)
-                    try {
-                        fs.writeFileSync(path.resolve(__dirname, 'uploads/领星海外仓明细表.xlsx'), resp)
-                    } catch (err) {
-                        console.log("出错啦~", err)
-                        resolve("出错啦")
-                    }
-                }
-
-            }
-        }
-        const warehouse_data = readXlsx(path.resolve(__dirname, 'uploads/领星海外仓明细表.xlsx'))
-        warehouse_data.forEach((ware, index) => {
-            if(!index) return
-            if (ware[15]) {
-                warehouse_goway_excel.push([ware[0], ware[15], ware[6]])
-            } else {
-                warehouse_goway_excel.push([ware[0], ware[16], ware[6]])
-            }
-        })
-        // 格式化
-        resolve({
-            local_excel,
-            FBA_excel,
-            warehouse_excel,
-            goway_excel,
-            warehouse_goway_excel
-        })
-    })
+/**
+ * 写入Excel文件
+ * @param {string} filePath 输出文件路径
+ * @param {Array<Object>} sheets 要写入的sheet数组，格式：{ name: string, data: Array<Array> }
+ */
+const writeXlsx = (filePath, sheets) => {
+    try {
+      const workbook = xlsx.utils.book_new();
+      sheets.forEach(sheet => {
+        const worksheet = xlsx.utils.aoa_to_sheet(sheet.data);
+        xlsx.utils.book_append_sheet(workbook, worksheet, sheet.name);
+      });
+      xlsx.writeFile(workbook, filePath);
+      console.log(`Excel文件写入成功: ${filePath}`);
+    } catch (error) {
+      console.error(`写入Excel文件失败: ${filePath}`, error);
+      throw error;
+    }
 }
-// getLingXingData()
-async function dianxiaomi_xlsx() {
-    let total_page = 1
-    let dd = []
-    let need_re_get = []
-    while(true) {
-        let url = `https://www.dianxiaomi.com/api/warehouseProduct/pageList.json`
-        let cookie = `tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F`
-        const resp = await axios({
-            url,
-            method: 'post',
-            headers: {
-                'content-type': 'application/x-www-form-urlencoded',
-                'cookie': cookie
-            },
-            data: `refreshFlag=&zoneType=0&pageNo=${total_page}&pageSize=100&searchType=1&searchValue=&productSearchType=0&warehouseIds=8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1`
-        }).then(res => res.data)
-        // console.log(resp)
-        if (resp.msg == 'Successful') {
-            total_page++
-            console.log(total_page, resp.data.page.totalPage, resp.data.page.list.length)
-            // 拿到数据了
-            resp.data.page.list.forEach(li => {
-                if (li.productSku == 'RYP-ABMT052302-Wh' || li.productSku == 'RYP-GZH-Wh') {
-                    console.log('有咩有', li.availableStockNum)
-                }
-                dd.push({
-                    sku: li.productSku,
-                    name: li.name ?? "暂无",
-                    canuse: li.availableStockNum
-                })
-            })
-            // 如果已经等于了,直接退
-            if (total_page == resp.data.page.totalPage) {
-                // dd过滤先
-                let formatData = {}
-                // 过滤数据
-                dd.forEach(item => {
-                    let all_sku = Object.keys(formatData)
-                    if (all_sku.includes(item.sku)) {
-                        // 如果包含 那么就直接加
-                        formatData[item.sku].canuse += item.canuse
-                    } else {
-                        // 不包含, 则创建
-                        formatData[item.sku] = {
-                            sku: item.sku,
-                            name: item.name ?? "暂无",
-                            canuse: item.canuse
-                        }
-                    }
-                })
-                // 这个地方要开始进行填表了
-                let file_path = path.resolve(__dirname, 'uploads/店小秘本地库存.xlsx')
-                const result = fs.readFileSync(file_path)
-                const workbook = xlsx.read(result, { type: 'buffer' })
-                // 获取文件名称
-                const filename = workbook.SheetNames[0]
-                // 获取第一个工作表数据
-                const worksheet = workbook.Sheets[filename]
-                // 转化json格式
-                let jsondata = xlsx.utils.sheet_to_json(worksheet, { header: 1})
-                jsondata = jsondata.filter(row => row.some(r => r !== ''))
-                // 添加头信息
-                let date = new Date()
-                // 日期
-                let today = date.getDate()
-                // 年份
-                let year = date.getFullYear()
-                // 月份
-                let month = date.getMonth() + 1
-                // 如果日期加7大于这个月则
-                let maxThisMonth = new Date(year,month,0).getDate()
-                // 第二个时间
-                let second_month = month
-                let second_day = today + 7
-                if (second_day > maxThisMonth) {
-                    second_month = month + 1
-                    second_day -= maxThisMonth
-                }
-                // 头部 先加一列
-                jsondata[0].push(`本期可用库存(${month < 10 ? '0' + month : month}${today< 10 ? '0' + today : today}-${second_month < 10 ? '0' + second_month : second_month}${second_day < 10 ? '0' + second_day : second_day})`)
-                // 开始找对应的数据
-                jsondata.forEach((json, idx) => {
-                    if (!idx) {
-                        return
-                    }
-                    let current_sku = json[0]
-                    let findData = Object.keys(formatData).includes(current_sku)
-                    if (findData) {
-                        // 插入
-                        json.push(formatData[current_sku].canuse)
-                    } else {
-                        // 证明要重新请求
-                        console.log(current_sku)
-                        need_re_get.push(current_sku)
-                    }
-                })
-                // 搞定了 可以循环了
-                for (let index = 0; index < need_re_get.length - 1; index++) {
-                    const element = need_re_get[index];
-                    console.log(element)
-                    // 请求下
-                    let url = `https://www.dianxiaomi.com/api/warehouseProduct/pageList.json`
-                    let cookie = `tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F`
-                    const resp = await axios({
-                        url,
-                        method: 'post',
-                        headers: {
-                            'content-type': 'application/x-www-form-urlencoded',
-                            'cookie': cookie
-                        },
-                        data: `refreshFlag=&zoneType=0&pageNo=1&pageSize=100&searchType=1&searchValue=${element}&productSearchType=0&warehouseIds=8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1`
-                    }).then(res => res.data)
-                    if (resp.msg == 'Successful') { 
-                        let total_num = 0;
-                        let score_data = null;
-                        score_data = jsondata.find((json, idx) => json[0] == element)
-                        if ((resp.data.page.list instanceof Array) && (!resp.data.page.list.length)) {
-                            if (score_data) {
-                                score_data.push(0)
-                            }
-                        } else if ((resp.data.page.list instanceof Array) && resp.data.page.list.length) {
-                            if (score_data) {
-                                resp.data.page.list.forEach(item => {
-                                    total_num += item.availableStockNum 
-                                })
-                                score_data.push(total_num)
-                            }
-                        } else {
-                            if (score_data) {
-                                score_data.push(resp.data.page.list.availableStockNum)
-                            }
-                        }
-                    }
-                }
-                // 输出为xlsx
-                const wb = new xlsx.utils.book_new()
-                const ws = new xlsx.utils.aoa_to_sheet(jsondata)
-                xlsx.utils.book_append_sheet(wb, ws, '店小秘库存表')
-                file_path = path.resolve(__dirname, 'uploads/店小秘本地库存01.xlsx')
-                const { local_excel, FBA_excel, warehouse_excel, goway_excel, warehouse_goway_excel } = await saveFile()
-                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(local_excel.concat(FBA_excel.slice(1),warehouse_excel.slice(1))), '总库存表')
-                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(local_excel), '本地仓库库存表')
-                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(FBA_excel), 'FBA库存表')
-                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(warehouse_excel), '海外仓库存表')
-                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(goway_excel), 'FBA在途库存表')
-                xlsx.utils.book_append_sheet(wb, xlsx.utils.aoa_to_sheet(warehouse_goway_excel), '海外仓在途库存表')
-                // 总库存
-                xlsx.writeFile(wb, file_path)
-                console.log("成了,打开看看吧")
-                break;
-            } else {
-                await delayFn(500)
-            }
-            // 看看结果是什么
-            // 地方直接导出表也行
+
+/************************** 5. HTTP请求工具函数 **************************/
+/**
+ * 领星ERP通用POST请求
+ * @param {string} url 请求地址
+ * @param {Object} data 请求体
+ * @param {Object} options 额外配置
+ * @returns {Promise<Object>} 响应数据
+ */
+const lingXingPost = async (url, data, options = {}) => {
+    try {
+      const response = await axios({
+        url,
+        method: 'POST',
+        headers: {
+          'Auth-Token': CONFIG.lingXing.authToken,
+          'x-ak-company-id': CONFIG.lingXing.companyId,
+          'content-type': 'application/json;charset=UTF-8',
+          ...options.headers
+        },
+        data: JSON.stringify(data),
+        timeout: CONFIG.lingXing.timeout,
+        ...options
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`领星ERP POST请求失败: ${url}`, error);
+      throw error;
+    }
+};
+  
+/**
+ * 领星ERP通用GET请求
+ * @param {string} url 请求地址
+ * @param {Object} options 额外配置
+ * @returns {Promise<Object>} 响应数据
+ */
+const lingXingGet = async (url, options = {}) => {
+    try {
+      const response = await axios({
+        url,
+        method: 'GET',
+        headers: {
+          'Auth-Token': CONFIG.lingXing.authToken,
+          'x-ak-company-id': CONFIG.lingXing.companyId,
+          ...options.headers
+        },
+        timeout: CONFIG.lingXing.timeout,
+        ...options
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`领星ERP GET请求失败: ${url}`, error);
+      throw error;
+    }
+};
+
+/**
+ * 领星ERP导出文件通用流程
+ * @param {Object} params 导出参数
+ * @returns {Promise<Buffer>} 导出的文件Buffer
+ */
+const lingXingExportFile = async (params) => {
+    const {
+      exportUrl,
+      exportData,
+      waitTime = CONFIG.lingXing.exportWaitTime.default,
+      start_Time,
+      end_Time
+    } = params;
+  
+    // 1. 发起导出请求
+    const exportResp = await lingXingPost(exportUrl, exportData);
+    if (exportResp.msg !== 'success' && exportResp.msg !== '操作成功') {
+      throw new Error(`领星ERP导出失败: ${exportResp.msg}`);
+    }
+  
+    // 2. 等待导出完成
+    await delayFn(waitTime);
+  
+    // 3. 获取导出报告列表
+    const reportUrl = `${CONFIG.lingXing.baseUrl}/api/download/downloadCenterReport/getReportData?${compareData({
+      offset: 0,
+      length: 20,
+      report_time_type: 0,
+      start_time: start_Time,
+      end_time: end_Time,
+      req_time_sequence: '/api/download/downloadCenterReport/getReportData$$1'
+    })}`;
+    const reportResp = await lingXingGet(reportUrl);
+    if (reportResp.msg !== 'success' || reportResp.data.total <= 0) {
+      throw new Error('领星ERP导出报告未找到');
+    }
+    await delayFn(waitTime);
+    
+    // 4. 下载导出文件
+    const reportId = reportResp.data.list[0].report_id;
+    const downloadUrl = `${CONFIG.lingXing.baseUrl}/api/download/downloadCenterReport/downloadResource?report_id=${reportId}`;
+    const fileResp = await axios({
+      url: downloadUrl,
+      method: 'GET',
+      headers: {
+        'Auth-Token': CONFIG.lingXing.authToken,
+        'x-ak-company-id': CONFIG.lingXing.companyId
+      },
+      responseType: 'arraybuffer'
+    });
+    return fileResp.data;
+};
+
+/**
+ * 店小秘通用POST请求
+ * @param {string} url 请求地址
+ * @param {string} data 请求体（form-urlencoded格式）
+ * @param {Object} options 额外配置
+ * @returns {Promise<Object>} 响应数据
+ */
+const dianXiaoMiPost = async (url, data, options = {}) => {
+    try {
+      const response = await axios({
+        url,
+        method: 'POST',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          'cookie': CONFIG.dianXiaoMi.cookie,
+          ...options.headers
+        },
+        data,
+        timeout: CONFIG.dianXiaoMi.timeout,
+        ...options
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`店小秘 POST请求失败: ${url}`, error);
+      throw error;
+    }
+};
+
+const normalPost = async (url, data, options = {}) => {
+    console.log(data, '看看数据')
+    try {
+        const response = await axios({
+          url,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            ...options.headers
+          },
+          data,
+          timeout: CONFIG.dianXiaoMi.timeout,
+          ...options
+        });
+        return response.data;
+    } catch (error) {
+        console.error(`普通请求 POST请求失败: ${url}`, error);
+        throw error;
+    }
+}
+
+/************************** 6. 业务逻辑模块 **************************/
+/**
+ * 加载仓库映射表
+ * @returns {Object} 仓库映射对象
+ */
+const loadWarehouseMap = () => {
+    const warehouseMap = {};
+    const jsonData = readXlsx(CONFIG.filePath.warehouseMap);
+    if (jsonData.length > 1) {
+      jsonData.slice(1).forEach(row => {
+        if (row[0] && row[1]) {
+          warehouseMap[row[0]] = row[1];
+        }
+      });
+    }
+    console.log('仓库映射表加载完成，共', Object.keys(warehouseMap).length, '条映射');
+    return warehouseMap;
+};
+
+/**
+ * 从店小秘拉取全量库存数据
+ * @returns {Object} 按SKU汇总的库存数据
+ */
+const fetchDianXiaoMiAllStock = async () => {
+    const allStoreProducts = [];
+    let currentPage = 1;
+    let totalPage = 1;
+  
+    console.log('开始拉取店小秘全量库存数据...');
+    while (currentPage <= totalPage) {
+      const requestUrl = `${CONFIG.dianXiaoMi.baseUrl}/api/warehouseProduct/pageList.json`;
+      const requestData = `refreshFlag=&zoneType=0&pageNo=${currentPage}&pageSize=${CONFIG.dianXiaoMi.pageSize}&searchType=1&searchValue=&productSearchType=0&warehouseIds=${CONFIG.dianXiaoMi.warehouseIds}&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1`;
+  
+      const resp = await dianXiaoMiPost(requestUrl, requestData);
+      if (resp.msg !== 'Successful') {
+        throw new Error(`店小秘库存拉取失败: ${resp.msg}`);
+      }
+  
+      // 更新总页数
+      totalPage = resp.data.page.totalPage;
+      // 收集数据
+      resp.data.page.list.forEach(productItem => {
+        allStoreProducts.push({
+          sku: productItem.productSku,
+          name: productItem.name ?? '暂无',
+          canuse: productItem.availableStockNum
+        });
+      });
+  
+      console.log(`店小秘库存拉取进度: 第${currentPage}/${totalPage}页，已收集${allStoreProducts.length}条数据`);
+      currentPage += 1;
+      await delayFn(500); // 避免请求过快被限流
+    }
+  
+    // 按SKU汇总库存
+    const stockSummary = {};
+    allStoreProducts.forEach(item => {
+      if (stockSummary[item.sku]) {
+        stockSummary[item.sku].canuse += item.canuse;
+      } else {
+        stockSummary[item.sku] = { ...item };
+      }
+    });
+  
+    console.log('店小秘全量库存拉取完成，共', Object.keys(stockSummary).length, '个SKU');
+    return stockSummary;
+};
+
+/**
+ * 批量拉取店小秘指定SKU的库存数据
+ * @param {Array<string>} skuList 要拉取的SKU列表
+ * @returns {Object} 按SKU汇总的库存数据
+ */
+const fetchDianXiaoMiSkuStockBatch = async (skuList) => {
+    const stockResult = {};
+    console.log('开始批量拉取店小秘缺失SKU库存，共', skuList.length, '个SKU');
+  
+    // 并发控制，最多3个请求同时进行，避免被限流
+    const concurrencyLimit = 3;
+    for (let i = 0; i < skuList.length; i += concurrencyLimit) {
+      const batchSkuList = skuList.slice(i, i + concurrencyLimit);
+      const batchPromises = batchSkuList.map(async (sku) => {
+        const requestUrl = `${CONFIG.dianXiaoMi.baseUrl}/api/warehouseProduct/pageList.json`;
+        const requestData = `refreshFlag=&zoneType=0&pageNo=1&pageSize=${CONFIG.dianXiaoMi.pageSize}&searchType=1&searchValue=${sku}&productSearchType=0&warehouseIds=${CONFIG.dianXiaoMi.warehouseIds}&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1`;
+  
+        try {
+          const resp = await dianXiaoMiPost(requestUrl, requestData);
+          if (resp.msg !== 'Successful') {
+            console.warn(`SKU ${sku} 拉取失败: ${resp.msg}`);
+            return { sku, totalNum: 0 };
+          }
+  
+          let totalNum = 0;
+          if (Array.isArray(resp.data.page.list) && resp.data.page.list.length > 0) {
+            resp.data.page.list.forEach(item => {
+              totalNum += item.availableStockNum;
+            });
+          }
+  
+          return { sku, totalNum };
+        } catch (error) {
+          console.error(`SKU ${sku} 拉取异常`, error);
+          return { sku, totalNum: 0 };
+        }
+      });
+  
+      // 等待当前批次完成
+      const batchResults = await Promise.all(batchPromises);
+      batchResults.forEach(({ sku, totalNum }) => {
+        if (stockResult[sku]) {
+            stockResult[sku] += totalNum; // 重复SKU → 累加
         } else {
-            break
+            stockResult[sku] = totalNum; // 首次出现 → 赋值
         }
+      });
+  
+      console.log(`已完成${Math.min(i + concurrencyLimit, skuList.length)}/${skuList.length}个SKU拉取`);
+      await delayFn(200); // 批次间延迟
+    }
+  
+    console.log('店小秘缺失SKU库存拉取完成');
+    return stockResult;
+};
+
+/**
+ * 从领星ERP拉取全量库存数据
+ * @param {string} start_Time 开始日期
+ * @param {string} end_Time 结束日期
+ * @returns {Array<Array>} 库存数据
+ */
+const fetchLingXingAllStock = async (start_Time, end_Time) => {
+    console.log('开始拉取领星ERP全仓库存数据...');
+    const exportUrl = `${CONFIG.lingXing.gwBaseUrl}/universal/storage/api/universal/export`;
+    const exportData = {
+      "attributes": [],
+      "principalList": [],
+      "productUids": [],
+      "searchField": "sku",
+      "pageNo": 1,
+      "pageSize": 20,
+      "seniorSearchList": [],
+      "isMultiPlatform": true,
+      "selectedFields": ["sku", "usedNum", "afnInboundShippedNum", "warehouseNames"],
+      "hasParentRow": false,
+      "hasChildrenRow": true,
+      "hasGrandsonRow": false,
+      "req_time_sequence": "/universal/storage/api/universal/export$$1"
+    };
+    const fileBuffer = await lingXingExportFile({
+            exportUrl,
+            exportData,
+            waitTime: CONFIG.lingXing.exportWaitTime.overseas,
+            start_Time,
+            end_Time
+          });
+
+    // 保存文件
+    fs.writeFileSync(CONFIG.filePath.lingXingAllStock, fileBuffer);
+    console.log('领星ERP全仓库存数据拉取完成');
+    return readXlsx(CONFIG.filePath.lingXingAllStock);
+};
+
+/**
+ * 获取秘钥, 获取最新的
+ * @param {String} url 秘钥地址
+ */
+const getLingXingSecret = async (url = CONFIG.postPath.secret_key_api) => {
+    try {
+        // 重新登录
+        const secret_result = await normalPost(url)
+        console.log(secret_result)
+        if (secret_result.msg == "操作成功") {
+            return secret_result.data
+        } else {
+            throw new Error("秘钥为空,请检查响应结果", secret_result)
+        }
+    } catch (err) {
+        throw new Error("重新秘钥请求失败", err)
     }
 }
-// dianxiaomi_xlsx()
+
+const getLingXingAuthToken = async (data, url = CONFIG.postPath.user_login_api) => {
+    try {
+        // 重新登录
+        const secret_result = await normalPost(url, data)
+        console.log(secret_result)
+        if (secret_result.msg == "操作成功") {
+            return secret_result.data?.secretKey
+        } else {
+            throw new Error("秘钥为空,请检查响应结果", secret_result)
+        }
+    } catch (err) {
+        throw new Error("重新秘钥请求失败", err)
+    }
+}
+
+
+/**
+ * 从领星ERP拉取货品单价数据
+ * @param {string} start_Time 开始日期
+ * @param {string} end_Time 结束日期
+ * @returns {Array<Array>} 单价数据
+ */
+const fetchLingXingPrice = async (start_Time, end_Time) => {
+    console.log('开始拉取领星ERP货品单价数据...');
+    const exportUrl = `${CONFIG.lingXing.baseUrl}/api/storage/export`;
+    const exportData = {
+        "wid_list": "",
+        "mid_list": "",
+        "sid_list": "",
+        "cid_list": "",
+        "bid_list": "",
+        "principal_list": "",
+        "product_type_list": "",
+        "product_attribute": "",
+        "product_status": "",
+        "search_field": "sku",
+        "search_value": "",
+        "is_sku_merge_show": 0,
+        "is_hide_zero_stock": 0,
+        "offset": 0,
+        "length": 200,
+        "sort_field": "",
+        "sort_type": "",
+        "gtag_ids": "",
+        "senior_search_list": "[]",
+        "permission_uid_list": "",
+        "country_code_list": "",
+        "req_time_sequence": "/api/storage/export$$2",
+        "selected_fields": "sku,purchase_price"
+    };
+    
+    let fileBuffer = null
+    try {
+        fileBuffer = await lingXingExportFile({
+            exportUrl,
+            exportData,
+            waitTime: CONFIG.lingXing.exportWaitTime.default,
+            start_Time,
+            end_Time
+        });
+    } catch (err) {
+        if (err.message.includes("未登录或登录已过期")) {
+            const secret_obj = await getLingXingSecret()
+            // 赋值密码
+            let encrypt_pwd = encryptData(Config.lingxing_pwd, secret_obj.secretKey)
+            // 获取最新的token
+            const secret_key = await getLingXingAuthToken({
+                "account": Config.lingxing_username,
+                "pwd": encrypt_pwd,
+                "verify_code": "",
+                "uuid": "e7bbcb86-02e7-4248-aad0-4b134ae7f1a8",
+                "auto_login": 1,
+                "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
+                "fingerprint": "db946fa165200730de5ad9b212f1910a",
+                "sensorsAnonymousId": "19c1d655e31a34-0875d9ef00e9bc8-26011151-2073600-19c1d655e3216e3",
+                "secretId": secret_obj.secretId,
+                "doubleCheckLoginReq": {
+                  "doubleCheckType": 1,
+                  "mobileLoginCode": "",
+                  "loginTick": ""
+                }
+            })
+        }
+    }
+    // 保存文件
+    fs.writeFileSync(CONFIG.filePath.lingXingPrice, fileBuffer);
+    console.log('领星ERP货品单价数据拉取完成');
+    return readXlsx(CONFIG.filePath.lingXingPrice);
+};
+
+
+/**
+ * 从领星ERP拉取海外仓库存数据
+ * @param {string} start_Time 开始日期
+ * @param {string} end_Time 结束日期
+ * @returns {Array<Array>} 海外仓库存数据
+ */
+const fetchLingXingOverseasStock = async (start_Time, end_Time) => {
+    console.log('开始拉取领星ERP海外仓库存数据...');
+    const exportUrl = `${CONFIG.lingXing.baseUrl}/api/wmsi/overseas/inventory_compare/exportInventoryCompareList`;
+    const exportData = {
+      "search_field": "sku",
+      "offset": 0,
+      "length": 20,
+      "req_time_sequence": "/api/wmsi/overseas/inventory_compare/exportInventoryCompareList$$2"
+    };
+  
+    const fileBuffer = await lingXingExportFile({
+      exportUrl,
+      exportData,
+      waitTime: CONFIG.lingXing.exportWaitTime.overseas,
+      start_Time,
+      end_Time
+    });
+  
+    // 保存文件
+    fs.writeFileSync(CONFIG.filePath.lingXingOverseasStock, fileBuffer);
+    console.log('领星ERP海外仓库存数据拉取完成');
+    return readXlsx(CONFIG.filePath.lingXingOverseasStock);
+};
+
+/**
+ * 处理领星ERP库存数据，按仓库类型拆分
+ * @param {Array<Array>} allStockData 全仓库存数据
+ * @param {Array<Array>} priceData 单价数据
+ * @param {Array<Array>} overseasStockData 海外仓库存数据
+ * @param {Object} warehouseMap 仓库映射表
+ * @param {string} headerDateText 表头日期文本
+ * @returns {Object} 拆分后的各仓库库存数据
+ */
+const processLingXingStockData = (
+    allStockData,
+    priceData,
+    overseasStockData,
+    warehouseMap,
+    headerDateText
+  ) => {
+    console.log('开始处理领星ERP库存数据...');
+    const header = ["公司sku",  '仓库名称', '成本单价', `本期可用库存(${headerDateText})`];
+  
+    // 初始化各仓库数据
+    const stockData = {
+        local_excel: [header],
+        FBA_excel: [header],
+        warehouse_excel: [header],
+        // ★ FBA在途表头：你原版固定 → SKU + 在途库存 + 仓库名称
+        goway_excel: [["公司sku", "仓库名称", '成本单价', `本期可用库存(${headerDateText})`]],
+        // ★ 海外仓在途表头：你原版固定 → SKU + 在途库存
+        warehouse_goway_excel: [["公司sku", "仓库名称", '成本单价', `本期可用库存(${headerDateText})`]]
+    }
+  
+    // 处理全仓库存数据
+    if (allStockData.length > 1) {
+        allStockData.slice(1).forEach(row => {
+          const sku = row[0];
+          const warehouseType = row[1];
+          const availableStock = row[3];
+          const inTransitStock = row[4];
+          const warehouseName = row[1];
+    
+          // 匹配单价
+          const priceItem = priceData.find(item => item[0] === sku);
+          const purchasePrice = priceItem ? (priceItem[1] === '-' ? 0 : priceItem[1]) : 0;
+    
+          // 按仓库分类
+          const mappedType = warehouseMap[warehouseType];
+          switch (mappedType) {
+            case "本地":
+              stockData.local_excel.push([sku, warehouseName, purchasePrice, availableStock]);
+              break;
+            case "FBA仓":
+              stockData.FBA_excel.push([sku, warehouseName, purchasePrice, availableStock]);
+              // ★ FBA在途：只存 SKU + 在途库存 + 仓库名称（你原版格式）
+              if (inTransitStock) {
+                stockData.goway_excel.push([sku, warehouseName, purchasePrice, inTransitStock]);
+              }
+              break;
+            case "海外仓":
+              stockData.warehouse_excel.push([sku, warehouseName, purchasePrice, availableStock]);
+              break;
+            default:
+              console.warn(`未知仓库类型: ${warehouseType} SKU: ${sku}`);
+          }
+        });
+      }
+  
+    // 处理海外仓在途数据
+    if (overseasStockData.length > 1) {
+        overseasStockData.slice(1).forEach(row => {
+        const sku = row[0];
+        const inTransitStock = row[15] || row[16] || 0;
+        const warehouseName = row[6];
+        // 匹配单价
+        const priceItem = priceData.find(item => item[0] === sku);
+        const purchasePrice = priceItem ? (priceItem[1] === '-' ? 0 : priceItem[1]) : 0;
+        // ★ 海外仓在途：只存 SKU + 在途库存（你原版）
+        stockData.warehouse_goway_excel.push([sku, warehouseName, purchasePrice, inTransitStock]);
+        });
+    }
+  
+    console.log('领星ERP库存数据处理完成');
+    return stockData;
+};
+  
+/**
+ * 处理店小秘库存模板，填充库存数据
+ * @param {Object} dianXiaoMiStock 店小秘全量库存数据
+ * @param {string} headerDateText 表头日期文本
+ * @returns {Array<Array>} 处理后的店小秘库存数据
+ */
+const processDianXiaoMiTemplate = (dianXiaoMiStock, headerDateText) => {
+    console.log('开始处理店小秘库存模板...');
+    // 读取模板文件
+    let templateData = readXlsx(CONFIG.filePath.dianXiaoMiTemplate);
+    // 过滤空行
+    templateData = templateData.filter(row => row.some(cell => cell !== ''));
+  
+    // 添加表头
+    const headerText = `本期可用库存(${headerDateText})`;
+    templateData[0].push(headerText);
+  
+    // 收集缺失的SKU
+    const missingSkuList = [];
+    templateData.slice(1).forEach(row => {
+      const sku = row[0];
+      if (dianXiaoMiStock[sku]) {
+        row.push(dianXiaoMiStock[sku].canuse);
+      } else {
+        missingSkuList.push(sku);
+        row.push(0); // 先占位，后续补全
+      }
+    });
+  
+    console.log('店小秘模板处理完成，缺失SKU数量:', missingSkuList.length);
+    return { templateData, missingSkuList };
+};
+
+/**
+ * 补全店小秘模板中缺失的SKU库存
+ * @param {Array<Array>} templateData 模板数据
+ * @param {Object} missingSkuStock 缺失SKU的库存数据
+ */
+const fillMissingSkuStock = (templateData, missingSkuStock) => {
+    console.log('开始补全店小秘模板缺失SKU库存...');
+    templateData.slice(1).forEach(row => {
+      const sku = row[0];
+      if (missingSkuStock[sku] !== undefined) {
+        row[row.length - 1] = missingSkuStock[sku];
+      }
+    });
+    console.log('店小秘模板缺失SKU库存补全完成');
+};
+
+/**
+ * 安全读取sheet（如果不存在则返回null）
+ * @param {string} filePath 文件路径
+ * @param {number} sheetIndex sheet索引
+ * @returns {Array<Array>|null} sheet数据，不存在则返回null
+ */
+const safeReadSheet = (filePath, sheetIndex) => {
+    try {
+        const dataBuffer = fs.readFileSync(filePath);
+        const workbook = xlsx.read(dataBuffer, { type: 'buffer' });
+        if (sheetIndex < workbook.SheetNames.length) {
+            const sheetName = workbook.SheetNames[sheetIndex];
+            const worksheet = workbook.Sheets[sheetName];
+            return xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+        }
+        return null;
+    } catch (error) {
+        console.log(`Sheet ${sheetIndex} 不存在或读取失败，将创建新表`);
+        return null;
+    }
+}
+
+
+const update_dianxiaomi_file = (old_path, new_path) => {
+    try {
+        fs.accessSync(old_path)
+        // 证明存在，那么就删掉
+        fs.unlinkSync(old_path)
+        // 更新另一个
+        fs.renameSync(new_path, old_path)
+    } catch (err) {
+        throw new Error("更新文件过程出错:", err)
+    }
+}
+
+
+/**
+ * 主函数：店小秘库存同步主流程
+ */
+const dianxiaomi_xlsx = async () => {
+    try {
+        // 每一次要生成新的之前,先把老的顶替掉再继续往下走
+        try {
+            fs.accessSync(CONFIG.output.generated_path)
+            update_dianxiaomi_file(CONFIG.output.template_path, CONFIG.output.generated_path)
+            console.log('===== 老表格删除,新表格重命名任务完成，文件可重新生成 =====');
+        } catch (err) {
+            console.log('===== 只存在店小秘库存表, 本次为初始化 =====');
+        }
+      console.log('===== 店小秘库存同步任务开始 =====');
+      // 1. 初始化基础数据
+      const { start_Time, end_Time } = getSevenDate();
+      const headerDateText = getStockHeaderDateText();
+      const warehouseMap = loadWarehouseMap();
+  
+      // 2. 拉取店小秘全量库存数据
+      const dianXiaoMiStock = await fetchDianXiaoMiAllStock();
+  
+      // 3. 处理店小秘库存模板
+      const { templateData, missingSkuList } = processDianXiaoMiTemplate(dianXiaoMiStock, headerDateText);
+  
+      // 4. 批量拉取缺失SKU的库存数据并补全
+      if (missingSkuList.length > 0) {
+        const missingSkuStock = await fetchDianXiaoMiSkuStockBatch(missingSkuList);
+        fillMissingSkuStock(templateData, missingSkuStock);
+      }
+  
+      // 5. 并行拉取领星ERP的所有数据（提升性能）
+      // 5. 串行拉取领星数据（必须串行！否则下载中心取第一个会全部错乱）
+      const lingXingPrice = await fetchLingXingPrice(start_Time, end_Time);
+      const lingXingAllStock = await fetchLingXingAllStock(start_Time, end_Time);
+      const lingXingOverseasStock = await fetchLingXingOverseasStock(start_Time, end_Time);
+  
+      // 6. 处理领星ERP库存数据
+      const lingXingStockData = processLingXingStockData(
+        lingXingAllStock,
+        lingXingPrice,
+        lingXingOverseasStock,
+        warehouseMap,
+        headerDateText
+      );
+  
+      // 7. 读取模板中的其他sheet数据
+      let localWarehouseData = safeReadSheet(CONFIG.filePath.dianXiaoMiTemplate, 2);
+      let FBAData = safeReadSheet(CONFIG.filePath.dianXiaoMiTemplate, 3);
+      let warehouseData = safeReadSheet(CONFIG.filePath.dianXiaoMiTemplate, 4);
+  
+      const createOrFillSheet = (existingData, sourceData, headerDateText) => {
+      if (existingData && existingData.length > 0) {
+            // 存在旧数据，填充库存
+            existingData[0].push(`本期可用库存(${headerDateText})`);
+            existingData.slice(1).forEach(row => {
+                const sku = row[0];
+                const matchItem = sourceData.find(item => item[0] === sku);
+                row.push(matchItem ? matchItem[3] : 0);
+                });
+                return existingData;
+        } 
+      else 
+       {
+                // 不存在旧数据，创建新表（使用源数据的表头）
+                const newData = [sourceData[0]]; // 复制表头
+                sourceData.slice(1).forEach(row => {
+                    newData.push([row[0], row[1], row[2], row[3]]);
+                });
+                return newData;
+            }
+        };
+      localWarehouseData = createOrFillSheet(localWarehouseData, lingXingStockData.local_excel, headerDateText);
+      FBAData = createOrFillSheet(FBAData, lingXingStockData.FBA_excel, headerDateText);
+      warehouseData = createOrFillSheet(warehouseData, lingXingStockData.warehouse_excel, headerDateText)
+  
+      // 9. 生成最终Excel文件
+      const totalStockData = lingXingStockData.local_excel.concat(
+        lingXingStockData.FBA_excel.slice(1),
+        lingXingStockData.warehouse_excel.slice(1)
+      );
+  
+      const outputSheets = [
+        { name: '店小秘库存表', data: templateData },
+        { name: '总库存表', data: totalStockData },
+        { name: '本地仓库库存表', data: lingXingStockData.local_excel },
+        { name: 'FBA库存表', data: lingXingStockData.FBA_excel },
+        { name: '海外仓库存表', data: lingXingStockData.warehouse_excel },
+        { name: 'FBA在途库存表', data: lingXingStockData.goway_excel },
+        { name: '海外仓在途库存表', data: lingXingStockData.warehouse_goway_excel }
+      ];
+  
+      writeXlsx(CONFIG.filePath.output, outputSheets);
+      console.log('===== 店小秘库存同步任务完成，文件已生成 =====');
+    } catch (error) {
+      console.error('===== 店小秘库存同步任务失败 =====', error);
+      throw error;
+    }
+};
+  
+// 执行主函数
+dianxiaomi_xlsx();

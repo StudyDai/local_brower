@@ -1,14 +1,21 @@
-const { default: axios } = require("axios")
+// const config = require('./config/config.json')
+// const path = require('path')
+// const fs = require('fs')
+// fs.accessSync(path.resolve(__dirname, 'uploads/background.js'))
+// console.log(config)
+// const config_path = path.resolve(__dirname, './config/config.json')
+// config.auth_token = '我爱你'
+// fs.writeFileSync(config_path, JSON.stringify(config))
+// 引入 crypto-js
+// const CryptoJS = require('crypto-js');
 
-async function initData() {
-    let url = 'https://www.dianxiaomi.com/api/warehouseProduct/pageList.json'
-    const resp = await axios({
-        method: 'post',
-        data: JSON.stringify('refreshFlag=&zoneType=0&pageNo=1&pageSize=100&searchType=1&searchValue=&productSearchType=1&warehouseIds=8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1'),
-        headers: {
-            'Content-Type': 'application/json',
-            'cookie': 'tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F'
-        }
-    }).then(res => res.data)
-    console.log(resp)
-}
+// const key = "0p7W4gIKXLNYQl44";
+// const plaintext = "szt20171218";
+
+// // 加密
+// const encrypted = CryptoJS.AES.encrypt(plaintext, CryptoJS.enc.Utf8.parse(key), {
+//     mode: CryptoJS.mode.ECB,
+//     padding: CryptoJS.pad.Pkcs7
+// }).toString();
+
+// console.log(encrypted); // 输出: Dk1NRJrjAeky1NHUES4PGw==
