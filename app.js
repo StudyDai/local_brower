@@ -1,3 +1,150 @@
+const { SocksProxyAgent } = require('socks-proxy-agent');
+// 创建 SOCKS5 代理 agent
+const agent = new SocksProxyAgent('socks5://127.0.0.1:10808');
+// 导入数据库
+// require("./models/inventory")
+// 导入数据库操作函数
+const ManagerServices = require("./services/adminServices");
+
+// 监听QQ邮箱的未读信息
+const Imap = require('imap');
+const { simpleParser } = require('mailparser');
+const getUserInfo = {
+    lei_01: {
+        user: "2109414432@qq.com",
+        password: "ylwqjwdfbcefcbeh", // QQ邮箱账户开启IMAP生成
+        host: "imap.qq.com",
+        port: 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
+    }
+}
+
+// 创建IMAP示例的函数
+function createIMAPAccount(secretKey, config) {
+    // 创建IMAP实例
+const imap = new Imap(config);
+// 标记是否正在idle状态
+let isIdling = false;
+imap.on('ready', () => {
+    imap.openBox('INBOX', false, (err) => {
+        if (err) throw err;
+        console.log(`✅ 收件箱${secretKey}连接成功，开始监听新邮件...`);
+    });
+})
+// 有新邮件就会触发这个事件
+imap.on('mail', () => {
+    console.log(`🔔 检测到${secretKey}有新邮件，开始拉取`);
+    // 先停止idle再拉取邮件
+    if (isIdling) {
+        imap.end(); // 结束idle状态
+        isIdling = false;
+    }
+    fetchNewMail();
+})
+// 拉取未读邮件
+function fetchNewMail() {
+    imap.search(['UNSEEN'], (err, ids) => {
+        if (err) {
+            console.error('搜索邮件失败：', err);
+            return;
+        }
+        
+        if (!ids || !ids.length) {
+            console.log('暂无新邮件，继续等待');
+            return;
+        }
+        
+        console.log(`📧 发现 ${ids.length} 封未读邮件`);
+        
+        // 拿到编号去请求，拿到完整的请求体
+        const fetch = imap.fetch(ids, { bodies: ''});
+        let processedCount = 0;
+        
+        fetch.on('message', (msg, seqno) => {
+            let raw = '';
+            msg.on('body', stream => {
+                stream.on('data', c => raw += c);
+            });
+            msg.on('end', async (data) => {
+                try {
+                    const mail = await simpleParser(raw);
+                    console.log('📩 ', secretKey, '有新邮件：', mail.subject, '来自：', mail.from ? mail.from.text : '未知', '其他内容: ', mail.text, mail.date);
+                    if (mail.subject.includes("TikTok") && mail.subject.includes("验证码")) {
+                        let code_list = mail.text.match(/输入：\s*(.*)\s*此验证码/)
+                        if (code_list.length == 1) {
+                            console.log("❌️ 没有匹配到验证码")
+                            return "没有写入成功"
+                        }
+                        // 存储到数据库
+                        const result = await ManagerServices.addPlatformCodeByTikTok({
+                            email: secretKey,
+                            platform_code: code_list[1],
+                            get_time: mail.date
+                        })
+                        console.log("处理结果: ", result)
+                        if (result == '写入成功') {
+                            // 这里是给邮件标记成为已读
+                            imap.seq.addFlags(seqno, ['\\Seen'], (err) => {
+                                if (err) {
+                                    console.error(`标记邮件 ${seqno} 为已读失败：`, err);
+                                } else {
+                                    console.log(`✅ 邮件 ${seqno} 已标记为已读`);
+                                }
+                            })
+                        }
+                    }
+                    processedCount++;
+                    console.log(`✅ 处理完成 ${processedCount} 封邮件`);
+                    
+                } catch (error) {
+                    console.error('解析邮件失败：', error);
+                    processedCount++;
+                }
+            });
+        });
+        
+        fetch.on('end', () => {
+            console.log("读取结束, 正在对数据进行合并操作")
+        });
+        
+        fetch.on('error', (err) => {
+            console.error('获取邮件失败：', err);
+        });
+    });
+}
+// 捕获连接/认证错误，方便排查问题
+imap.on('error', (err) => {
+    console.error('❌ IMAP连接出错：', err);
+    isIdling = false;
+    // 如果是连接错误，尝试重连
+    if (err.message.includes('ECONNRESET') || err.message.includes('ETIMEDOUT')) {
+        setTimeout(() => {
+            if (!imap.state || imap.state === 'disconnected') {
+                console.log('🔄 尝试重新连接...');
+                imap.connect();
+            }
+        }, 5000);
+    }
+});
+
+// 监听连接关闭事件
+imap.on('close', () => {
+    console.log('🔌 IMAP连接已关闭');
+    isIdling = false;
+    // 自动重连
+    setTimeout(() => {
+        console.log('🔄 尝试重新连接...');
+        imap.connect();
+    }, 5000);
+});
+
+// 连接远程QQ邮箱,准备接收未读信息
+imap.connect();
+}
+// 创建第一个IMAP
+createIMAPAccount(getUserInfo.lei_01.user, getUserInfo.lei_01)
+
 const express = require('express');
 const app = express();
 const fs = require('fs');
@@ -19,6 +166,8 @@ const { pdfToPng } = require('pdf-to-png-converter');
 const warehouse_list = require('./warehouse_map.json');
 const Config = require("./config/config.json")
 const CryptoJS = require('crypto-js');
+const { randomUUID } = require('crypto'); 
+const config_path = path.resolve(__dirname, 'config/config.json')
 // 这个地方调用下xlsx吧
 let xlData = [['操作参数(1点击,2双击,3滚动,4复制,5粘贴,6长按, 7等待, 8自定义, 9移动， 10自定义鼠标操作', '时长/滚动距离', '操作的图片路径']]
 // 循环
@@ -545,6 +694,12 @@ app.use('/tiktok', express.static('tiktok'))
 app.use('/prv', express.static(path.resolve(__dirname, '../')))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+app.get('/', function(req, res, next) {
+    res.send({
+        code: 200,
+        msg: '请求成功'
+    })
+})
 app.get('/getPic', function(req, res, next) {
     // windows.forEach((item) => {
     //     console.log({
@@ -2000,6 +2155,63 @@ app.post('/temu_file_sellerCenter', async (req, res, next) => {
     }
 })
 
+
+// tiktok广告账户
+app.get('/tiktok/account', async (req, res, next) => {
+    let account_url = 'https://ads.tiktok.com/pa/api/spider/query_payment_account'
+    const resp = await axios({
+        method: 'post',
+        url: account_url,
+        httpsAgent: agent,
+        data: JSON.stringify({
+            "Context": {
+              "platform": 1,
+              "adv_id": "7527560980491026440",
+              "bc_id": ""
+            },
+            "module_list": [
+              0,
+              3
+            ]
+        }),
+        headers: {
+            // ⭐ 基础头
+            'accept': '*/*',
+            'accept-encoding': 'gzip, deflate, br, zstd',
+            'accept-language': 'zh-CN,zh;q=0.9',
+            'content-type': 'application/json',
+        
+            // ⭐ 关键！这些是 Postman 成功的关键
+            'x-requested-with': 'XMLHttpRequest',
+            'origin': 'https://ads.tiktok.com',
+            'referer': 'https://ads.tiktok.com/i18n/account/payment?aadvid=7527560980491026440',
+            'sec-fetch-site': 'same-origin',
+            'sec-fetch-mode': 'cors',
+            'sec-fetch-dest': 'empty',
+        
+            // ⭐ 浏览器标识
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36',
+            'cookie': Config.tiktok_cookie
+        }
+    }).then(res => res.data)
+    console.log("看看结果", resp)
+    res.send(resp)
+})
+
+
+// temu监听活动规则
+app.post('/temu/activity/start', async (req, res, next) => {
+    console.log("我收到的内容", req.body)
+    res.send({
+        code: 200,
+        data: req.body
+    })
+})
+
+// tiktok 账号验证码获取
+
+
+
 app.listen('8889',() => {
     console.log('Server is running on port 8889');
 })
@@ -2036,6 +2248,7 @@ const CONFIG = {
       lingXingAllStock: path.resolve(__dirname, 'uploads/领星全仓明细表.xlsx'),
       lingXingPrice: path.resolve(__dirname, 'uploads/领星货品单价明细表.xlsx'),
       lingXingOverseasStock: path.resolve(__dirname, 'uploads/领星海外仓明细表.xlsx'),
+      lingXingAllInventoryExcludingFBAStock: path.resolve(__dirname, "uploads/领星除了FBA其他所有库存表.xlsx"),
       output: path.resolve(__dirname, 'uploads/店小秘本地库存01.xlsx')
     },
     postPath: {
@@ -2124,6 +2337,17 @@ const encryptData = (data, secret_key) => {
         mode: CryptoJS.mode.ECB,
         padding: CryptoJS.pad.Pkcs7
     }).toString();
+}
+
+const localStorage_JSONFile = (filePath, saveObject) => {
+    try {
+        fs.accessSync(filePath)
+    } catch (err) {
+        // 文件不存在 报错
+        throw new Error("文件路径不存在, 请检查")
+    }
+    console.log(saveObject)
+    return fs.writeFileSync(filePath, JSON.stringify(saveObject))
 }
 
 /************************** 4. Excel工具函数 **************************/
@@ -2509,16 +2733,81 @@ const getLingXingSecret = async (url = CONFIG.postPath.secret_key_api) => {
 const getLingXingAuthToken = async (data, url = CONFIG.postPath.user_login_api) => {
     try {
         // 重新登录
-        const secret_result = await normalPost(url, data)
+        const secret_result = await normalPost(url, data, {
+            headers: {
+                'Content-Type': 'application/json;charset=UTF-8',
+                'Accept': 'application/json, text/plain, */*',
+                'Accept-Encoding': 'gzip, deflate, br, zstd',
+                'Accept-Language': 'zh-CN,zh;q=0.9',
+                'Origin': 'https://erp.lingxing.com',
+                'Referer': 'https://erp.lingxing.com/',
+                'ak-origin': 'https://erp.lingxing.com',
+                'x-ak-request-source': 'erp',
+                'x-ak-version': 'AKVERSIONNUM',
+                'x-ak-zid': '',  // ← 如果有值就填，没有就空字符串
+                'x-ak-request-id': randomUUID().replace(/-/g, ''),  // ← 去掉横杠试试
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36',
+                'Connection': 'keep-alive',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache'
+            }
+        })
         console.log(secret_result)
         if (secret_result.msg == "操作成功") {
-            return secret_result.data?.secretKey
+            return secret_result.token
         } else {
             throw new Error("秘钥为空,请检查响应结果", secret_result)
         }
     } catch (err) {
         throw new Error("重新秘钥请求失败", err)
     }
+}
+
+/**
+ * 获取本地库存所有内容,并且写入 debugger
+ * @param {String} start_Time 开始时间
+ * @param {Strin} end_Time 结束时间
+ * @returns {Array<Array>} 除了FBA所有库存数据
+ */
+const fetchLingXingMultipleStock = async (start_Time, end_Time) => {
+    console.log('开始拉取领星ERP除开FBA的所有库存数据...');
+    const exportUrl = `${CONFIG.lingXing.baseUrl}/api/storage/export`;
+    const exportData = {
+        "wid_list": "18835,18949,18457,18258,18259,18201,18200,18257,18660,18906,18722,18597,18675,18598,18596,18828,18843,19038,18845,18844,19037,18846,18724,17906,17905,17902,17904,17903,17910,18172,17909,17908,17907",
+        "mid_list": "",
+        "sid_list": "",
+        "cid_list": "",
+        "bid_list": "",
+        "principal_list": "",
+        "product_type_list": "",
+        "product_attribute": "",
+        "product_status": "",
+        "search_field": "sku",
+        "search_value": "",
+        "is_sku_merge_show": 0,
+        "is_hide_zero_stock": 0,
+        "offset": 0,
+        "length": 200,
+        "sort_field": "",
+        "sort_type": "",
+        "gtag_ids": "",
+        "senior_search_list": "[]",
+        "permission_uid_list": "",
+        "country_code_list": "",
+        "req_time_sequence": "/api/storage/export$$1",
+        "selected_fields": "product_name,sku,store_name_list,fnsku_list,sku_identifier,msku_list,global_tags,country_name_list,wh_name,bin_arr,spu_name,spu,attribute_name_list,category,brand_name,principal_name_list,permission_name_list,unit,model,product_status_name,good_num,good_lock_num,bad_num,bad_lock_num,pre_lock_num,qc_num,available_inventory_box_qty,pending_num,expect_valid_num,expect_pending_num,transit_num,transit_amount,transit_fee,transit_head_cost,transit_cost,pickout_num,storage_distribute_num,total,pre_total,purchase_price,price,head_stock_price,stock_price,amount,fee,head_stock_cost,stock_cost,average_age,warn_status_name,section1,section2,section3,section4,section5,section6,section7,remark"
+    }
+    const fileBuffer = await lingXingExportFile({
+        exportUrl,
+        exportData,
+        waitTime: CONFIG.lingXing.exportWaitTime.overseas,
+        start_Time,
+        end_Time
+    });
+    // 保存文件
+    fs.writeFileSync(CONFIG.filePath.lingXingAllInventoryExcludingFBAStock, fileBuffer);
+    console.log('拉取领星ERP除开FBA的所有库存数据完成');
+    return readXlsx(CONFIG.filePath.lingXingAllInventoryExcludingFBAStock);
 }
 
 
@@ -2571,12 +2860,14 @@ const fetchLingXingPrice = async (start_Time, end_Time) => {
             const secret_obj = await getLingXingSecret()
             // 赋值密码
             let encrypt_pwd = encryptData(Config.lingxing_pwd, secret_obj.secretKey)
+            console.log(encrypt_pwd, Config.lingxing_username, secret_obj.secretId, "账号密码,秘钥id")
+            await delayFn(2000)
             // 获取最新的token
             const secret_key = await getLingXingAuthToken({
                 "account": Config.lingxing_username,
                 "pwd": encrypt_pwd,
                 "verify_code": "",
-                "uuid": "e7bbcb86-02e7-4248-aad0-4b134ae7f1a8",
+                "uuid": randomUUID(),
                 "auto_login": 1,
                 "device": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
                 "fingerprint": "db946fa165200730de5ad9b212f1910a",
@@ -2588,6 +2879,21 @@ const fetchLingXingPrice = async (start_Time, end_Time) => {
                   "loginTick": ""
                 }
             })
+            console.log(secret_key, "秘钥是什么")
+            if (secret_key.trim()) {
+                // 有东西 保存
+                CONFIG.lingXing.authToken = secret_key
+                // 先赋值 持久化
+                Config.auth_token = secret_key
+                const save_result = localStorage_JSONFile(config_path ,Config)
+                fileBuffer = await lingXingExportFile({
+                    exportUrl,
+                    exportData,
+                    waitTime: CONFIG.lingXing.exportWaitTime.default,
+                    start_Time,
+                    end_Time
+                });
+            }
         }
     }
     // 保存文件
@@ -2799,6 +3105,7 @@ const update_dianxiaomi_file = (old_path, new_path) => {
  * 主函数：店小秘库存同步主流程
  */
 const dianxiaomi_xlsx = async () => {
+    const { start_Time, end_Time } = getSevenDate();
     try {
         // 每一次要生成新的之前,先把老的顶替掉再继续往下走
         try {
@@ -2810,7 +3117,6 @@ const dianxiaomi_xlsx = async () => {
         }
       console.log('===== 店小秘库存同步任务开始 =====');
       // 1. 初始化基础数据
-      const { start_Time, end_Time } = getSevenDate();
       const headerDateText = getStockHeaderDateText();
       const warehouseMap = loadWarehouseMap();
   
@@ -2893,7 +3199,25 @@ const dianxiaomi_xlsx = async () => {
       console.error('===== 店小秘库存同步任务失败 =====', error);
       throw error;
     }
+
+    // 开始存数据库
+    const multiple_data = await fetchLingXingMultipleStock(start_Time, end_Time)
+    // 开始封装, 准备写进数据库
+    let inventory_addData = multiple_data.slice(1).map(data => ({
+        platform_sku: data[1],
+        amount: data[21],
+        warehouse_name: data[8],
+        shop_name: data[4] ?? '暂无绑定',
+        local_sku: data[1],
+        product_name: data[0] ?? "暂无中文名称",
+        brand_name: data[17] ?? "暂无品牌",
+        product_category: "暂无分类",
+        product_cost: data[39] == '-' ? 0 : data[39]
+    }))
+    // 调用数据库
+    const insertResult = await ManagerServices.addInventoryRow(inventory_addData)
+    console.log(insertResult)
 };
   
 // 执行主函数
-dianxiaomi_xlsx();
+// dianxiaomi_xlsx();
