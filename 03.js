@@ -1,19 +1,158 @@
-const axios = require('axios')
+// const path = require("path")
+// const fs = require("fs")
+// const xlsx = require("xlsx")
+// const adminServices = require("./services/adminServices")
+// const skuMappingModel = require("./models/platform_dianxiaomisku_map")
 
-async function initData() {
-    let url = 'https://www.dianxiaomi.com/api/warehouseProduct/pageList.json'
-    const resp = await axios({
-        url,
-        method: 'post',
-        data: JSON.stringify('refreshFlag=&zoneType=0&pageNo=1&pageSize=300&searchType=1&searchValue=&productSearchType=1&warehouseIds=8266898%2C8200824%2C8166357%2C8120271%2C8104178%2C8012436%2C7736371%2C7508508%2C7427530%2C7427528%2C7427206%2C7427204%2C7427202%2C7427200%2C7427198%2C7427196%2C7427194%2C7407240%2C7295182%2C7162988%2C7056843%2C7056841%2C7056833%2C7056831%2C7056826%2C7056822%2C7056820%2C7056818%2C7056814%2C7056812%2C7056810%2C7056808&isTransit=&orderBy=1&orderByVal=1&fullCid=&groupOrNot=&priceMin=&priceMax=&stockMin=&stockMax=&availableMin=&availableMax=&safeMin=&safeMax=&onPassMin=&onPassMax=&lockMin=&lockMax=&unBilledOrderMin=&unBilledOrderMax=&productStatus=-1'),
-        headers: {
-            'Content-Type': 'application/json',
-            'cookie': 'tfstk=ggvnATbfcB5IkwzZnzWITebm7kGOd965-UeRyTQr_N7_Jyep4gDkyFUJvX6pEYbMPwCdLJelZN812LnCwFxyyevJr3iC4a8yradK6xKBAT6rkTDxHH_QrAGwZayyb0SCVcIUaR_2mT6rkVFTU6McFej5VubebcjR277yzg7wbi_N4WWyzN5N0iUFUT8rjOSlmW7zTMWZQibNzTWyzhoGVNSPUT8ybcjSTfePoLJ6Q4Kr0-tyUdJGx6b2jjwzEBwATZ-FS8u2IM0PuH7gU87L1Qf6jH33hhBBBEjvJAyHoHR2zI8ZIJf6ThvlGLaEbT5y6ICHs2ylWpIlgT5g48-GLN1XUtk4SGOwvQJB-u2PAppAZZ1i481RQKC2geqSchWF4U1XeqwC83-XhIBmERWhag58_Syj88sZ2dP7N6S1jZBWLL2aPCJcncmgGX1FfM3xjcV7N6S1jZnijSa5TGsKk; dxm_i=MTY1NzU2MiFhVDB4TmpVM05UWXkhMGE0YjdiNjdkMTQ4NTkwM2Q1MGVjYTUzZWNiZDg5OTI; dxm_t=MTc2OTUwNTQ1OSFkRDB4TnpZNU5UQTFORFU1IWY5MTQ4MDFhYzEyZDYzMWU5NjVkMmRiYmQ2MmRlMmM1; dxm_c=WE5UV0VPM0UhWXoxWVRsUlhSVTh6UlEhMGI0YzE3Nzk2YzVkZTE0Y2UyZTk1Y2ZjMzEzMTViNGU; dxm_w=MmM5OGU3NDFmNThmYmZkYTQ2MzQ4YzM4NmIyNzk0MDAhZHoweVl6azRaVGMwTVdZMU9HWmlabVJoTkRZek5EaGpNemcyWWpJM09UUXdNQSE0NjVjYzVkMzkwNThjMjUwYTllZWJmM2RkNzQyNGEyYQ; dxm_s=TTht45w08H4vRRX1sbGo6wucm2fI_R59kxDlcHZLFmM; MYJ_mmyuqgf30n=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjJkNzU1ZmE4NC01ZWM4LTRkYjktYTdmZS1hNDNkNDhmYzVjMWIlMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIlMjIlMkMlMjJwYXJlbnRJZCUyMiUzQSUyMiUyMiUyQyUyMnNlc3Npb25JZCUyMiUzQTE3Njk0NDE5NDU1OTclMkMlMjJvcHRPdXQlMjIlM0FmYWxzZSU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTIycmVmZXJyZXIlMjIlM0ElMjJodHRwcyUzQSUyRiUyRnd3dy5hbWF6b24uY29tJTJGJTIyJTJDJTIycmVmZXJyaW5nX2RvbWFpbiUyMiUzQSUyMnd3dy5hbWF6b24uY29tJTIyJTdE; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc2OTc2OTY1MDY0MiUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; MYJ_MKTG_fapsc5t4tc=JTdCJTdE; Hm_lvt_f8001a3f3d9bf5923f780580eb550c0b=1775614092,1776755437,1776843458,1777366841; HMACCOUNT=C1BFB3766E7A33A7; MYJ_fapsc5t4tc=JTdCJTIyZGV2aWNlSWQlMjIlM0ElMjIwNzY1NzcyNC02Yzg3LTRlMjgtYjBhMi1kZjIxMGFmMTBmN2ElMjIlMkMlMjJ1c2VySWQlMjIlM0ElMjIxNjU3NTYyJTIyJTJDJTIycGFyZW50SWQlMjIlM0ElMjIxNjQyNDA3JTIyJTJDJTIyc2Vzc2lvbklkJTIyJTNBMTc3NzM2OTUwMzcwOSUyQyUyMm9wdE91dCUyMiUzQWZhbHNlJTJDJTIybGFzdEV2ZW50SWQlMjIlM0E5MiU3RA==; Hm_lpvt_f8001a3f3d9bf5923f780580eb550c0b=1777369514; JSESSIONID=B8660A9A4D7A4427E1AA96A02969E62F'
-        }
-    }).then(res => res.data)
-    console.log(resp)
-}
+// const PLATFORM = "Aliexpress"
+// const FALLBACK_LOCAL_SKU = "error_sku"
 
-// initData()
-let raw = Buffer.from('3hSyc0vZOnfPnkGhzFSQRCZABjfIK4AYy7EHpHni1vIpAyP5Jb58wapEljlu4ZJvrMNOgBGxS9tEGQPxQZQd6P0rOqjywu_g1Jo9KB7fUHA7e8duBCom8ujBiAQBxmH_7FEHtA==', 'base64').toString('utf8')
-console.log(raw)
+// const readXlsx = (filePath) => {
+//     const readDataList = []
+//     const dataBuffer = fs.readFileSync(filePath)
+//     const workbook = xlsx.read(dataBuffer, { type: "buffer" })
+
+//     for (let index = 0; index < workbook.SheetNames.length - 2; index += 2) {
+//         const sheetName = workbook.SheetNames[index]
+//         const worksheet = workbook.Sheets[sheetName]
+//         const rows = xlsx.utils.sheet_to_json(worksheet, {
+//             header: 2,
+//             defval: ""
+//         })
+
+//         rows.forEach((row, rowIndex) => {
+//             readDataList.push({
+//                 ...row,
+//                 __sheetName: sheetName,
+//                 __rowIndex: rowIndex + 1
+//             })
+//         })
+//     }
+
+//     return readDataList
+// }
+
+// const normalizeText = (value) => String(value || "").trim()
+
+// const normalizeExcelRow = (item, index) => {
+//     return {
+//         index,
+//         sheetName: item.__sheetName,
+//         rowIndex: item.__rowIndex,
+//         platform: PLATFORM,
+//         platform_sku_id: normalizeText(item["SKU信息"]),
+//         dianxiaomi_sku: normalizeText(item["SKU信息_4"]),
+//         platform_sku: normalizeText(item["SKU信息_5"])
+//     }
+// }
+
+// const isHeaderRow = (row) => {
+//     return row.platform_sku_id === "skuId"
+//         || row.dianxiaomi_sku === "SKU编码"
+//         || row.platform_sku === "货品编码"
+// }
+
+// const isLocalSkuError = (resp) => {
+//     return resp instanceof Error && resp.message.includes("店小秘sku不存在")
+// }
+
+// const saveSkuMapping = async (row) => {
+//     const payload = {
+//         platform: row.platform,
+//         platform_sku: row.platform_sku,
+//         platform_sku_id: row.platform_sku_id,
+//         dianxiaomi_sku: row.dianxiaomi_sku || FALLBACK_LOCAL_SKU
+//     }
+
+//     const usedFallbackBecauseEmpty = !row.dianxiaomi_sku
+//     let resp = await adminServices.upsertSkuMappingData(payload)
+
+//     if (!usedFallbackBecauseEmpty && isLocalSkuError(resp)) {
+//         payload.dianxiaomi_sku = FALLBACK_LOCAL_SKU
+//         resp = await adminServices.upsertSkuMappingData(payload)
+
+//         if (!(resp instanceof Error)) {
+//             return {
+//                 ok: true,
+//                 fallback: true,
+//                 fallbackReason: "店小秘 SKU 不存在",
+//                 row,
+//                 data: resp
+//             }
+//         }
+//     }
+
+//     if (resp instanceof Error) {
+//         return {
+//             ok: false,
+//             fallback: usedFallbackBecauseEmpty,
+//             reason: resp.message,
+//             row
+//         }
+//     }
+
+//     return {
+//         ok: true,
+//         fallback: usedFallbackBecauseEmpty,
+//         fallbackReason: usedFallbackBecauseEmpty ? "Excel 店小秘 SKU 为空" : "",
+//         row,
+//         data: resp
+//     }
+// }
+
+// const filePath = path.resolve(__dirname, "uploads/aliexpress_good.xlsx")
+
+// ;(async () => {
+//     try {
+//         const data = readXlsx(filePath)
+//         const rows = data.map(normalizeExcelRow)
+//         const skippedRows = rows.filter((row) => {
+//             return isHeaderRow(row) || !row.platform_sku_id || !row.platform_sku
+//         })
+//         const importRows = rows.filter((row) => {
+//             return !isHeaderRow(row) && row.platform_sku_id && row.platform_sku
+//         })
+
+//         const softDeleteResult = await skuMappingModel.update({
+//             delete_flag: 1
+//         }, {
+//             where: {
+//                 platform: PLATFORM,
+//                 platform_sku_id: "skuId",
+//                 delete_flag: 0
+//             }
+//         })
+
+//         const results = []
+//         for (let index = 0; index < importRows.length; index++) {
+//             results.push(await saveSkuMapping(importRows[index]))
+//         }
+
+//         const successList = results.filter((item) => item.ok)
+//         const failedList = results.filter((item) => !item.ok)
+//         const fallbackList = successList.filter((item) => item.fallback)
+//         const fallbackByEmptyList = fallbackList.filter((item) => item.fallbackReason === "Excel 店小秘 SKU 为空")
+//         const fallbackByMissingSkuList = fallbackList.filter((item) => item.fallbackReason === "店小秘 SKU 不存在")
+
+//         console.log("Excel读取总行数:", rows.length)
+//         console.log("跳过行数:", skippedRows.length)
+//         console.log("准备导入行数:", importRows.length)
+//         console.log("软删除历史表头脏数据:", softDeleteResult[0])
+//         console.log("导入成功:", successList.length)
+//         console.log("使用 error_sku 兜底:", fallbackList.length)
+//         console.log("  - Excel 店小秘 SKU 为空:", fallbackByEmptyList.length)
+//         console.log("  - 店小秘 SKU 外键不存在:", fallbackByMissingSkuList.length)
+//         console.log("导入失败:", failedList.length)
+
+//         if (failedList.length) {
+//             console.log("失败明细:", failedList)
+//         }
+//     } catch (err) {
+//         console.error("导入失败:", err)
+//     } finally {
+//         const sequelize = skuMappingModel.sequelize
+//         await sequelize.close()
+//     }
+// })()
+// const path = require('path')
+// console.log(path.resolve(__dirname, 'tiktok_data'))

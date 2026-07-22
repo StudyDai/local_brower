@@ -17,138 +17,204 @@ const getUserInfo = {
         port: 993,
         tls: true,
         tlsOptions: { rejectUnauthorized: false }
+    },
+    xuan_01: {
+        user: "2377537946@qq.com",
+        password: "vkwiniaknkateccd", // QQ邮箱账户开启IMAP生成
+        host: "imap.qq.com",
+        port: 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
+    },
+    xuan_02: {
+        user: "1058741639@qq.com",
+        password: "mboiodzrdcuqbede", // QQ邮箱账户开启IMAP生成
+        host: "imap.qq.com",
+        port: 993,
+        tls: true,
+        tlsOptions: { rejectUnauthorized: false }
     }
 }
 
 // 创建IMAP示例的函数
+// 创建IMAP实例的函数
 function createIMAPAccount(secretKey, config) {
-    // 创建IMAP实例
-const imap = new Imap(config);
-// 标记是否正在idle状态
-let isIdling = false;
-imap.on('ready', () => {
-    imap.openBox('INBOX', false, (err) => {
-        if (err) throw err;
-        console.log(`✅ 收件箱${secretKey}连接成功，开始监听新邮件...`);
-    });
-})
-// 有新邮件就会触发这个事件
-imap.on('mail', () => {
-    console.log(`🔔 检测到${secretKey}有新邮件，开始拉取`);
-    // 先停止idle再拉取邮件
-    if (isIdling) {
-        imap.end(); // 结束idle状态
-        isIdling = false;
+    let reconnectTimer = null;
+
+    function scheduleReconnect() {
+        if (reconnectTimer) return;
+
+        reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            console.log(`🔄 ${secretKey} 尝试重新连接...`);
+            connect();
+        }, 10000);
     }
-    fetchNewMail();
-})
-// 拉取未读邮件
-function fetchNewMail() {
-    imap.search(['UNSEEN'], (err, ids) => {
-        if (err) {
-            console.error('搜索邮件失败：', err);
-            return;
-        }
-        
-        if (!ids || !ids.length) {
-            console.log('暂无新邮件，继续等待');
-            return;
-        }
-        
-        console.log(`📧 发现 ${ids.length} 封未读邮件`);
-        
-        // 拿到编号去请求，拿到完整的请求体
-        const fetch = imap.fetch(ids, { bodies: ''});
-        let processedCount = 0;
-        
-        fetch.on('message', (msg, seqno) => {
-            let raw = '';
-            msg.on('body', stream => {
-                stream.on('data', c => raw += c);
-            });
-            msg.on('end', async (data) => {
-                try {
-                    const mail = await simpleParser(raw);
-                    console.log('📩 ', secretKey, '有新邮件：', mail.subject, '来自：', mail.from ? mail.from.text : '未知', '其他内容: ', mail.text, mail.date);
-                    if (mail.subject.includes("TikTok") && mail.subject.includes("验证码")) {
-                        let code_list = mail.text.match(/输入：\s*(.*)\s*此验证码/)
-                        if (code_list.length == 1) {
-                            console.log("❌️ 没有匹配到验证码")
-                            return "没有写入成功"
-                        }
-                        // 存储到数据库
-                        const result = await ManagerServices.addPlatformCodeByTikTok({
-                            email: secretKey,
-                            platform_code: code_list[1],
-                            get_time: mail.date
-                        })
-                        console.log("处理结果: ", result)
-                        if (result == '写入成功') {
-                            // 这里是给邮件标记成为已读
-                            imap.seq.addFlags(seqno, ['\\Seen'], (err) => {
-                                if (err) {
-                                    console.error(`标记邮件 ${seqno} 为已读失败：`, err);
-                                } else {
-                                    console.log(`✅ 邮件 ${seqno} 已标记为已读`);
-                                }
-                            })
-                        }
-                    }
-                    processedCount++;
-                    console.log(`✅ 处理完成 ${processedCount} 封邮件`);
-                    
-                } catch (error) {
-                    console.error('解析邮件失败：', error);
-                    processedCount++;
+
+    function connect() {
+        const imap = new Imap({
+            ...config,
+            connTimeout: 30000,
+            authTimeout: 30000,
+            keepalive: true
+        });
+
+        let isFetching = false;
+
+        imap.on('ready', () => {
+            imap.openBox('INBOX', false, (err) => {
+                if (err) {
+                    console.error(`❌ ${secretKey} 打开收件箱失败：`, err);
+                    imap.end();
+                    return;
                 }
+
+                console.log(`✅ 收件箱 ${secretKey} 连接成功，开始监听新邮件...`);
             });
         });
-        
-        fetch.on('end', () => {
-            console.log("读取结束, 正在对数据进行合并操作")
+
+        // 有新邮件就会触发这个事件
+        imap.on('mail', () => {
+            console.log(`🔔 检测到 ${secretKey} 有新邮件，开始拉取`);
+
+            // 不要 imap.end()，直接拉取即可
+            fetchNewMail();
         });
-        
-        fetch.on('error', (err) => {
-            console.error('获取邮件失败：', err);
-        });
-    });
-}
-// 捕获连接/认证错误，方便排查问题
-imap.on('error', (err) => {
-    console.error('❌ IMAP连接出错：', err);
-    isIdling = false;
-    // 如果是连接错误，尝试重连
-    if (err.message.includes('ECONNRESET') || err.message.includes('ETIMEDOUT')) {
-        setTimeout(() => {
-            if (!imap.state || imap.state === 'disconnected') {
-                console.log('🔄 尝试重新连接...');
-                imap.connect();
+
+        // 拉取未读邮件
+        function fetchNewMail() {
+            if (isFetching) {
+                console.log(`⏳ ${secretKey} 正在处理邮件，本次触发先跳过`);
+                return;
             }
-        }, 5000);
-    }
-});
 
-// 监听连接关闭事件
-imap.on('close', () => {
-    console.log('🔌 IMAP连接已关闭');
-    isIdling = false;
-    // 自动重连
-    setTimeout(() => {
-        console.log('🔄 尝试重新连接...');
+            isFetching = true;
+
+            imap.search(['UNSEEN'], (err, ids) => {
+                if (err) {
+                    console.error(`❌ ${secretKey} 搜索邮件失败：`, err);
+                    isFetching = false;
+                    return;
+                }
+
+                if (!ids || !ids.length) {
+                    console.log(`📭 ${secretKey} 暂无新邮件，继续等待`);
+                    isFetching = false;
+                    return;
+                }
+
+                console.log(`📧 ${secretKey} 发现 ${ids.length} 封未读邮件`);
+
+                const fetch = imap.fetch(ids, {
+                    bodies: '',
+                    markSeen: false
+                });
+
+                let processedCount = 0;
+
+                fetch.on('message', (msg, seqno) => {
+                    let raw = '';
+
+                    msg.on('body', (stream) => {
+                        stream.on('data', (chunk) => {
+                            raw += chunk.toString('utf8');
+                        });
+                    });
+
+                    msg.on('end', async () => {
+                        try {
+                            const mail = await simpleParser(raw);
+                            const subject = mail.subject || '';
+                            const text = mail.text || '';
+
+                            if (!subject.includes('TikTok') || !subject.includes('验证码')) {
+                                return;
+                            }
+
+                            console.log(
+                                '📩',
+                                secretKey,
+                                '有新邮件：',
+                                subject,
+                                '来自：',
+                                mail.from ? mail.from.text : '未知',
+                                '内容：',
+                                text,
+                                '时间：',
+                                mail.date
+                            );
+
+                            const codeList = text.match(/输入：\s*(.*?)\s*此验证码/);
+
+                            if (!codeList || !codeList[1]) {
+                                console.log(`❌ ${secretKey} 没有匹配到验证码`);
+                                return;
+                            }
+
+                            const result = await ManagerServices.addPlatformCodeByTikTok({
+                                email: secretKey,
+                                platform_code: codeList[1],
+                                get_time: mail.date
+                            });
+
+                            console.log(`处理结果 ${secretKey}:`, result);
+
+                            if (result === '写入成功') {
+                                imap.seq.addFlags(seqno, ['\\Seen'], (err) => {
+                                    if (err) {
+                                        console.error(`❌ ${secretKey} 标记邮件 ${seqno} 为已读失败：`, err);
+                                    } else {
+                                        console.log(`✅ ${secretKey} 邮件 ${seqno} 已标记为已读`);
+                                    }
+                                });
+
+                                processedCount++;
+                                console.log(`✅ ${secretKey} 处理完成 ${processedCount} 封邮件`);
+                            }
+                        } catch (error) {
+                            console.error(`❌ ${secretKey} 解析邮件失败：`, error);
+                        }
+                    });
+                });
+
+                fetch.on('end', () => {
+                    console.log(`✅ ${secretKey} 读取结束`);
+                    isFetching = false;
+                });
+
+                fetch.on('error', (err) => {
+                    console.error(`❌ ${secretKey} 获取邮件失败：`, err);
+                    isFetching = false;
+                });
+            });
+        }
+
+        imap.on('error', (err) => {
+            console.error(`❌ ${secretKey} IMAP连接出错：`, err);
+            // 这里不直接 imap.connect()，等 close 统一重连
+        });
+
+        imap.on('close', () => {
+            console.log(`🔌 ${secretKey} IMAP连接已关闭`);
+            isFetching = false;
+            scheduleReconnect();
+        });
+
         imap.connect();
-    }, 5000);
-});
+    }
 
-// 连接远程QQ邮箱,准备接收未读信息
-imap.connect();
+    connect();
 }
 // 创建第一个IMAP
 createIMAPAccount(getUserInfo.lei_01.user, getUserInfo.lei_01)
+createIMAPAccount(getUserInfo.xuan_01.user, getUserInfo.xuan_01)
+createIMAPAccount(getUserInfo.xuan_02.user, getUserInfo.xuan_02)
 
 const express = require('express');
 const app = express();
 const fs = require('fs');
 const path = require('path')
+const crypto = require('crypto')
 const multer = require('multer')
 const axios = require('axios')
 const cors = require('cors');
@@ -158,6 +224,9 @@ const ExcelJS = require('exceljs')
 const WebSocket = require('ws')
 const wss = new WebSocket.Server({ port: 8888 });
 const { exec, spawn } = require('child_process');
+const DATABASE_ACCESS_PASSWORD_FILE = path.resolve(__dirname, 'database_access_password.txt')
+const DATABASE_ACCESS_TOKEN_TTL = 2 * 60 * 60 * 1000
+const databaseAccessTokens = new Map()
 const { Window } = require("node-screenshots");
 let windows = Window.all();
 const tesseract = require('tesseract.js');
@@ -694,10 +763,92 @@ app.use('/tiktok', express.static('tiktok'))
 app.use('/prv', express.static(path.resolve(__dirname, '../')))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }))
+
+function readDatabaseAccessPassword() {
+    try {
+        return fs.readFileSync(DATABASE_ACCESS_PASSWORD_FILE, 'utf8').trim()
+    } catch (err) {
+        return ''
+    }
+}
+
+function createDatabaseAccessToken() {
+    const token = crypto.randomBytes(32).toString('hex')
+    const expiresAt = Date.now() + DATABASE_ACCESS_TOKEN_TTL
+    databaseAccessTokens.set(token, expiresAt)
+    cleanupDatabaseAccessTokens()
+    return { token, expiresAt }
+}
+
+function cleanupDatabaseAccessTokens() {
+    const now = Date.now()
+    for (const [token, expiresAt] of databaseAccessTokens.entries()) {
+        if (expiresAt <= now) {
+            databaseAccessTokens.delete(token)
+        }
+    }
+}
+
+function verifyDatabaseAccessToken(token) {
+    if (!token) return false
+    const expiresAt = databaseAccessTokens.get(token)
+    if (!expiresAt || expiresAt <= Date.now()) {
+        databaseAccessTokens.delete(token)
+        return false
+    }
+    return true
+}
+
+function requireDatabaseAccess(req, res, next) {
+    const token = req.get('x-database-access-token')
+    if (verifyDatabaseAccessToken(token)) {
+        return next()
+    }
+
+    res.status(401).send({
+        code: 401,
+        msg: '数据库访问未验证或已过期',
+        message: '数据库访问未验证或已过期，请重新输入访问密码'
+    })
+}
+
 app.get('/', function(req, res, next) {
     res.send({
         code: 200,
         msg: '请求成功'
+    })
+})
+
+app.post('/database-access/verify', function(req, res) {
+    const password = String(req.body && req.body.password || '').trim()
+    const savedPassword = readDatabaseAccessPassword()
+
+    if (!savedPassword) {
+        return res.status(500).send({
+            code: 500,
+            msg: '访问密码未配置',
+            message: '访问密码未配置，请检查 database_access_password.txt'
+        })
+    }
+
+    if (password !== savedPassword) {
+        return res.status(403).send({
+            code: 403,
+            msg: '访问密码错误',
+            message: '访问密码错误'
+        })
+    }
+
+    const access = createDatabaseAccessToken()
+    res.send({
+        code: 200,
+        msg: '验证成功',
+        data: {
+            accessGranted: true,
+            token: access.token,
+            expiresAt: access.expiresAt,
+            expiresIn: DATABASE_ACCESS_TOKEN_TTL
+        }
     })
 })
 app.get('/getPic', function(req, res, next) {
@@ -949,8 +1100,30 @@ const storage = multer.diskStorage({
         cb(null, file.fieldname + '-' + uniqueSuffix + '.' + file.originalname.split('.').pop());
     }
 });
+const tiktok_storage = multer.diskStorage({
+    // 设置文件存储的目标目录
+    destination: function (req, file, cb) {
+        // 定义存储目录
+        const uploadDir = path.join(__dirname, 'tiktok_data');
+
+        // 检查目录是否存在，如果不存在则创建
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir);
+        }
+        cb(null, 'tiktok_data/');
+    },
+    // 设置文件名
+    filename: function (req, file, cb) {
+        // 生成唯一的文件名，避免文件名冲突
+        file.originalname = Buffer.from(file.originalname, "latin1").toString("utf8")
+        cb(null, file.originalname);
+    }
+});
 // 创建multer示例
 const upload = multer({ storage: storage })
+
+// 创建跟tiktok有关的实例
+const tiktok_upload = multer({ storage: tiktok_storage })
 
 app.post('/getOrderByAccount', upload.single('file'), function(req, res, next) {
     let { cookie, mallid } = req.query
@@ -1182,11 +1355,13 @@ app.get('/callUser', async (req, res, next) => {
 })
 
 app.post('/getGoodList', async function(req, res, next) {
-    const { cookie, mallid, sku_item } = req.body
+    console.log(req.body)
+    const { cookie, mallid, skc_item } = req.body
     const myHeader = new Headers()
     myHeader.append('Content-Type', 'application/json')
     myHeader.append('cookie', cookie)
     myHeader.append('mallid', mallid)
+    console.log(cookie, mallid, skc_item)
     async function getAllList(url, data, list) {
         const result = await fetch(url, {
             method: 'POST',
@@ -1206,13 +1381,13 @@ app.post('/getGoodList', async function(req, res, next) {
             }
         }
     }
-    if (cookie && mallid && sku_item) {
+    if (cookie && mallid && skc_item) {
         // 每次进来先随机等待个1-3秒
         let rand = Math.floor(Math.random() * 3) + 1
         await delayFn(rand * 1000)
         let resultList = []
         await delayFn()
-        await getAllList('https://agentseller.temu.com/visage-agent-seller/product/skc/pageQuery', {page: 1, pageSize: 500, productSkuIds:[sku_item]}, resultList)
+        await getAllList('https://agentseller.temu.com/visage-agent-seller/product/skc/pageQuery', {page: 1, pageSize: 500, productSkcIds:[skc_item]}, resultList)
         // 返回给用户
         res.send({
             statu: 200,
@@ -2061,26 +2236,56 @@ app.post('/vm/login', (req, res, next) => {
 
 // 用来请求页码数据返回
 app.post('/temu_file_page', async (req, res, next) => {
-    const { mallid, cookie } = req.body
-    let resp = await axios({
-        url: 'https://seller.kuajingmaihuo.com/api/merchant/file/export/history/page',
-        method: 'post',
-        data: JSON.stringify({
-            "taskType": 19,
-            "pageSize": 10,
-            "pageNum": 1
-        }),
-        headers: {
-            Mallid: mallid,
-            'content-type': 'application/json',
-            cookie
+    try {
+        const { mallid, cookie } = req.body
+
+        for (let i = 0; i < 30; i++) {
+            const resp = await axios({
+                url: 'https://seller.kuajingmaihuo.com/api/merchant/file/export/history/page',
+                method: 'post',
+                data: JSON.stringify({
+                    taskType: 19,
+                    pageSize: 10,
+                    pageNum: 1
+                }),
+                headers: {
+                    Mallid: mallid,
+                    'content-type': 'application/json',
+                    cookie
+                }
+            }).then(res => res.data)
+
+            if (resp.success) {
+                const list = resp.result?.merchantMerchantFileExportHistoryList || []
+                const item = list[0]
+
+                if (
+                    item?.id &&
+                    item?.agentSellerExportParams &&
+                    item?.agentSellerExportSign
+                ) {
+                    return res.send({
+                        code: 200,
+                        data: item,
+                        msg: "任务参数已生成"
+                    })
+                }
+
+                console.log(`第 ${i + 1} 次查询，任务参数还没生成`, item)
+            } else {
+                console.log(`第 ${i + 1} 次查询任务列表失败`, resp)
+            }
+
+            await delayFn(3000)
         }
-    }).then(res => res.data)
-    if (resp.success) {
-        res.send({
-            code: 200,
-            data: resp.result.merchantMerchantFileExportHistoryList[0]
+
+        return res.send({
+            code: 408,
+            data: null,
+            msg: "等待任务参数生成超时"
         })
+    } catch (err) {
+        next(err)
     }
 })
 
@@ -2098,60 +2303,90 @@ function getAllDate(date = new Date()) {
 console.log(getAllDate().start_Time.getTime())
 // 用来先拉到整个月的数据
 app.post('/temu_file_click', async (req, res, next) => {
-    const { mallid, cookie } = req.body
-    const { start_Time, end_Time } = getAllDate()
-    let resp = await axios({
-        url: 'https://seller.kuajingmaihuo.com/api/merchant/file/export',
-        method: 'post',
-        data: JSON.stringify({
-            "fundDetailExport": true,
-            "taskType": 19,
-            "beginTime": start_Time.getTime(),
-            "endTime": end_Time.getTime()
-        }),
-        headers: {
-            Mallid: mallid,
-            'content-type': 'application/json',
-            cookie
+    try {
+        const { mallid, cookie } = req.body
+        const { start_Time, end_Time } = getAllDate()
+
+        const resp = await axios({
+            url: 'https://seller.kuajingmaihuo.com/api/merchant/file/export',
+            method: 'post',
+            data: JSON.stringify({
+                fundDetailExport: true,
+                taskType: 19,
+                beginTime: start_Time.getTime(),
+                endTime: end_Time.getTime()
+            }),
+            headers: {
+                Mallid: mallid,
+                'content-type': 'application/json',
+                cookie
+            }
+        }).then(res => res.data)
+
+        console.log(resp, "我是创建任务")
+
+        if (resp.success) {
+            return res.send({
+                code: 200,
+                data: resp,
+                msg: "成功触发任务"
+            })
         }
-    }).then(res => res.data)
-    console.log(resp, "我是创建任务")
-    if (resp.success) {
-        res.send({
-            code: 200,
-            data: "成功触发任务"
+
+        if (resp.errorMsg == "当前筛选条件的导出任务已创建, 请勿重复创建") {
+            return res.send({
+                code: 300,
+                data: resp,
+                msg: "已存在任务"
+            })
+        }
+
+        return res.send({
+            code: 500,
+            data: resp,
+            msg: "创建任务失败"
         })
-    } else if (resp.errorMsg == "当前筛选条件的导出任务已创建, 请勿重复创建") {
-        res.send({
-            code: 300,
-            data: "已存在任务"
-        })
+    } catch (err) {
+        next(err)
     }
 })
 
 // 单独下载temu的一个表单
 app.post('/temu_file_sellerCenter', async (req, res, next) => {
-    const { mallid, cookie, id } = req.body
-    let resp = await axios({
-        url: "https://seller.kuajingmaihuo.com/api/merchant/file/export/download",
-        method: 'post',
-        data: JSON.stringify({
-            "taskType": 19,
-            id
-        }),
-        headers: {
-            Mallid: mallid,
-            'content-type': 'application/json',
-            cookie
+    try {
+        const { mallid, cookie, id } = req.body
+
+        const resp = await axios({
+            url: "https://seller.kuajingmaihuo.com/api/merchant/file/export/download",
+            method: 'post',
+            data: JSON.stringify({
+                taskType: 19,
+                id
+            }),
+            headers: {
+                Mallid: mallid,
+                'content-type': 'application/json',
+                cookie
+            }
+        }).then(res => res.data)
+
+        console.log(resp)
+
+        if (resp.success) {
+            return res.send({
+                code: 200,
+                data: resp,
+                msg: "卖家中心文件下载地址获取成功"
+            })
         }
-    }).then(res => res.data)
-    console.log(resp)
-    if (resp.success) {
-        // 返回
-        res.send({
-            code: 200,
-            data: resp
+
+        return res.send({
+            code: 500,
+            data: resp,
+            msg: "卖家中心文件下载地址获取失败"
         })
+    } catch (err) {
+        next(err)
     }
 })
 
@@ -2201,17 +2436,506 @@ app.get('/tiktok/account', async (req, res, next) => {
 
 // temu监听活动规则
 app.post('/temu/activity/start', async (req, res, next) => {
-    console.log("我收到的内容", req.body)
-    res.send({
-        code: 200,
-        data: req.body
-    })
+    const { mallid, cookieHeader } = req.body
+    const url = 'https://agentseller.temu.com/api/kiana/gamblers/marketing/enroll/list'
+    const resp = await axios({
+        url,
+        method: 'post',
+        data: JSON.stringify({
+            "pageNo": 1,
+            "pageSize": 10,
+            "forBatchEditStock": true,
+            "remainingActivityStockTo": 5
+        }),
+        headers: {
+            'content-type': 'application/json',
+            'cookie': cookieHeader,
+            'Mallid': mallid
+        }
+    }).then(res => res.data)
+    if (resp.result?.list?.length) {
+        // 返回了,正确
+        res.send({
+            code: 200,
+            data: resp.result.list.filter(item => item.canEditStock).map(item => ({
+                item_pic: item.pictureUrl,
+                item_spu: item.productId,
+                item_all_stock: item.activityStock,
+                item_arg_stock: item.remainingActivityStock,
+                item_title: item.productName,
+                activity_name: item.activityTypeName + item.activityThematicName ,
+                sku_list: item.skcList[0].skuList.map(item2 => ({
+                    product_sku: item2.extCode,
+                    product_activity_price: item2.sitePriceList[0].activityPrice / 100
+                }))
+            }))
+        })
+    }
 })
 
-// tiktok 账号验证码获取
+// 获取对应QQ邮箱的验证码
+app.get('/tiktok/code/:email', async (req, res, next) => {
+    console.log(req.params, "看看")
+    const { email } = req.params
+    if (!email.trim()) {
+        res.status = 403
+        res.send({
+            code: 403,
+            msg: '传递邮箱地址有误,请重新输入'
+        })
+    } else {
+        let resp = await ManagerServices.searchPlatformCodeByEmail(email)
+        res.statu = 200
+        res.send({
+            code: 200,
+            msg: '查询成功',
+            data: resp
+        })
+
+    }
+})
+function getTodayDate(d = new Date()) {
+    const date = d;
+
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate() - 1).padStart(2, "0");
+
+    return `${year}-${month}-${day}`;
+}
+// 接收传递过来的文件
+app.post('/tiktok/download_file', tiktok_upload.single('file'), async (req, res, next) => {
+    console.log(req.file, '看看文件信息')
+    if (req.file.originalname.includes("日销量") || 
+        req.file.originalname.includes("周销量") ||
+        req.file.originalname.includes("月销量")) {
+        let table_data = read_xlsx_data(path.resolve(__dirname, 'tiktok_data', req.file.originalname))
+        res.send({
+            code: 200,
+            msg: '上传成功'
+        })
+    } else {
+        // 收到文件之后 就直接丢到数据库里面去
+        let table_data = read_xlsx_data(path.resolve(__dirname, req.file.destination, req.file.filename))
+        const shop_name = path.parse(req.file.filename)?.name
+        let result_data = table_data.length ? table_data.filter(item => item['SKU货号']).map(item => ({
+            'platform_sku': item['SKU货号'],
+            'local_sku': item['SKU货号'],
+            'sale_volume_local': item['今日销量'],
+            'sale_volume_seven': item['近7日销量'],
+            'sale_volume_thirty': item['近30日销量'],
+            'shop_name': shop_name,
+            'platform': 'TikTok',
+            'product_skc': item['SKC'],
+            'product_sku': item['SKU'],
+            'product_spu': item['SPU'],
+            'data_time': getTodayDate()
+        })) : []
+        // 写入数据库
+        if (result_data.length) {
+            const writeResp = await ManagerServices.addTikTokVolumeToOneSevenThirty(result_data)
+            if (writeResp !== 'tiktok销量写入成功') {
+                // 证明有毛病输出
+                console.log("tiktok数据写入数据库出现问题: ", writeResp)
+                res.send({
+                    code: 200,
+                    msg: '文件已保存本地,但数据库持久化失败,请稍后再试'
+                })
+            } else {
+                console.log(writeResp)
+                res.send({
+                    code: 200,
+                    msg: '数据库持久化成功'
+                })
+            }
+        }
+    }
+    
+})
+
+app.use(['/dianxiaomi/list', '/sku-mappings'], requireDatabaseAccess)
+
+// 查询店小秘sku的
+app.get('/dianxiaomi/list', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.getDianxiaomiData({
+            page: req.query.page,
+            pageSize: req.query.pageSize,
+            keyword: req.query.keyword
+        })
+        if (resp instanceof Error) {
+            throw resp
+        }
+        res.send({
+            code: 200,
+            msg: '请求成功',
+            data: resp.list,
+            pagination: {
+                page: resp.page,
+                pageSize: resp.pageSize,
+                total: resp.total,
+                totalPages: resp.totalPages
+            }
+        })
+    } catch (err) {
+        res.status(500).send({
+            code: 500,
+            msg: '请求失败',
+            error: err.message || String(err)
+        })
+    }
+})
+// 更新店小秘sku的
+app.post('/dianxiaomi/list', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.createDianxiaomiData(req.body)
+        if (resp instanceof Error) {
+            throw resp
+        }
+        res.status(201).send({
+            code: 201,
+            msg: '新增成功',
+            data: resp
+        })
+    } catch (err) {
+        res.status(500).send({
+            code: 500,
+            msg: '新增失败',
+            error: err.message || String(err)
+        })
+    }
+})
+// 新增店小秘ksku的
+app.put('/dianxiaomi/list/:id', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.updateDianxiaomiData(req.params.id, req.body)
+        if (resp instanceof Error) {
+            throw resp
+        }
+        if (!resp) {
+            return res.status(404).send({
+                code: 404,
+                msg: 'SKU不存在'
+            })
+        }
+        res.send({
+            code: 200,
+            msg: '修改成功',
+            data: resp
+        })
+    } catch (err) {
+        res.status(500).send({
+            code: 500,
+            msg: '修改失败',
+            error: err.message || String(err)
+        })
+    }
+})
+// 删除店小秘sku的
+app.delete('/dianxiaomi/list/:id', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.deleteDianxiaomiData(req.params.id)
+        if (resp instanceof Error) {
+            throw resp
+        }
+        if (!resp) {
+            return res.status(404).send({
+                code: 404,
+                msg: 'SKU不存在'
+            })
+        }
+        res.send({
+            code: 200,
+            msg: '删除成功'
+        })
+    } catch (err) {
+        res.status(500).send({
+            code: 500,
+            msg: '删除失败',
+            error: err.message || String(err)
+        })
+    }
+})
 
 
 
+// 同步店小秘的数据到我的数据库里面
+// ;(async () => {
+//     let filePath = path.resolve(__dirname, 'uploads/dianxiaomi.xlsx')
+//     let dianxiaomi_data = read_xlsx_data(filePath)
+//     // console.log(dianxiaomi_data)
+//     if (dianxiaomi_data.length > 1) {
+//         dianxiaomi_data = dianxiaomi_data.map(item => ({
+//             "product_name_cn": item['中文名称'],
+//             "local_sku": item['商品SKU'],
+//             "product_price": item['采购参考价'],
+//             "product_pic": item["图片URL"]
+//         }))
+//     }
+//     const result = await ManagerServices.addDianxiaomiStock(dianxiaomi_data)
+//     console.log(result)
+// })();
+// 这个地方要去读取tiktok_data传递过来的内容
+
+
+// SKU映射列表
+app.get('/sku-mappings', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.getSkuMappingData({
+            keyword: req.query.keyword
+        })
+        if (resp instanceof Error) {
+            throw resp
+        }
+        res.send({
+            code: 200,
+            msg: '请求成功',
+            data: resp
+        })
+    } catch (err) {
+        res.status(err.statusCode || 500).send({
+            code: err.statusCode || 500,
+            msg: '请求失败',
+            message: err.message || String(err)
+        })
+    }
+})
+
+// 新增SKU映射
+app.post('/sku-mappings', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.createSkuMappingData(req.body)
+        if (resp instanceof Error) {
+            throw resp
+        }
+        res.status(201).send({
+            code: 201,
+            msg: '新增成功',
+            data: resp
+        })
+    } catch (err) {
+        res.status(err.statusCode || 500).send({
+            code: err.statusCode || 500,
+            msg: '新增失败',
+            message: err.message || String(err)
+        })
+    }
+})
+
+function readSkuMappingImportExcel(filePath) {
+    const requiredHeaders = [
+        'platform',
+        'dianxiaomi_sku',
+        'platform_sku',
+        'platform_sku_id',
+        'sku_count'
+    ]
+    const workbook = xlsx.readFile(filePath)
+    const sheetName = workbook.SheetNames[0]
+
+    if (!sheetName) {
+        return {
+            rows: [],
+            missingHeaders: requiredHeaders
+        }
+    }
+
+    const worksheet = workbook.Sheets[sheetName]
+    const rawRows = xlsx.utils.sheet_to_json(worksheet, {
+        defval: ''
+    })
+    const headers = rawRows[0] ? Object.keys(rawRows[0]).map(item => String(item).trim()) : []
+    const missingHeaders = requiredHeaders.filter(header => !headers.includes(header))
+
+    if (missingHeaders.length) {
+        return {
+            rows: [],
+            missingHeaders
+        }
+    }
+
+    const rows = rawRows.map((item, index) => ({
+        platform: item.platform,
+        dianxiaomi_sku: item.dianxiaomi_sku,
+        platform_sku: item.platform_sku,
+        platform_sku_id: item.platform_sku_id,
+        sku_count: item.sku_count,
+        __rowNumber: index + 2
+    })).filter(item => {
+        return requiredHeaders.some(header => String(item[header] || '').trim())
+    })
+
+    return {
+        rows,
+        missingHeaders: []
+    }
+}
+
+function removeUploadedFile(filePath) {
+    if (!filePath) return
+    fs.unlink(filePath, (err) => {
+        if (err) {
+            console.log('删除临时上传文件失败:', err)
+        }
+    })
+}
+
+// 批量导入SKU映射，Excel表头必须是 platform / dianxiaomi_sku / platform_sku / platform_sku_id / sku_count
+app.post('/sku-mappings/import', upload.single('file'), async (req, res, next) => {
+    const uploadedFilePath = req.file && req.file.path
+
+    try {
+        if (!req.file) {
+            return res.status(400).send({
+                code: 400,
+                msg: '导入失败',
+                message: '请上传Excel文件'
+            })
+        }
+
+        const importData = readSkuMappingImportExcel(uploadedFilePath)
+        if (importData.missingHeaders.length) {
+            return res.status(400).send({
+                code: 400,
+                msg: '导入失败',
+                message: 'Excel表头缺少字段: ' + importData.missingHeaders.join(', ')
+            })
+        }
+
+        if (!importData.rows.length) {
+            return res.status(400).send({
+                code: 400,
+                msg: '导入失败',
+                message: 'Excel没有可导入的数据'
+            })
+        }
+
+        const resp = await ManagerServices.importSkuMappingData(importData.rows)
+        if (resp instanceof Error) {
+            throw resp
+        }
+
+        res.send({
+            code: 200,
+            msg: '导入完成',
+            data: resp
+        })
+    } catch (err) {
+        res.status(err.statusCode || 500).send({
+            code: err.statusCode || 500,
+            msg: '导入失败',
+            message: err.message || String(err)
+        })
+    } finally {
+        removeUploadedFile(uploadedFilePath)
+    }
+})
+
+// 修改SKU映射
+app.put('/sku-mappings/:id', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.updateSkuMappingData(req.params.id, req.body)
+        if (resp instanceof Error) {
+            throw resp
+        }
+        if (!resp) {
+            return res.status(404).send({
+                code: 404,
+                msg: 'SKU映射不存在',
+                message: 'SKU映射不存在'
+            })
+        }
+        res.send({
+            code: 200,
+            msg: '修改成功',
+            data: resp
+        })
+    } catch (err) {
+        res.status(err.statusCode || 500).send({
+            code: err.statusCode || 500,
+            msg: '修改失败',
+            message: err.message || String(err)
+        })
+    }
+})
+
+// 软删除SKU映射：不真实删除，只把 delete_flag 改成 1
+app.delete('/sku-mappings/:id', async (req, res, next) => {
+    try {
+        const resp = await ManagerServices.deleteSkuMappingData(req.params.id)
+        if (resp instanceof Error) {
+            throw resp
+        }
+        if (!resp) {
+            return res.status(404).send({
+                code: 404,
+                msg: 'SKU映射不存在',
+                message: 'SKU映射不存在'
+            })
+        }
+        res.send({
+            code: 200,
+            msg: '删除成功'
+        })
+    } catch (err) {
+        res.status(err.statusCode || 500).send({
+            code: err.statusCode || 500,
+            msg: '删除失败',
+            message: err.message || String(err)
+        })
+    }
+})
+
+function read_xlsx_data (filePath) {
+    if (!filePath) {
+        return "路径不能为空"
+    }
+    const wookbook = xlsx.readFile(filePath)
+    const sheetname = wookbook.SheetNames[0]
+    // 拿到内容
+    const worksheet = wookbook.Sheets[sheetname]
+    // 转json
+    const json_data = xlsx.utils.sheet_to_json(worksheet)
+    console.log(json_data)
+    // 获取表格名称
+    if (json_data.length) {
+        return json_data
+    } else {
+        return []
+    }
+}
+function saveTikTokData(filePath) {
+    let fileList = fs.readdirSync(filePath)
+    console.log(fileList)
+    if (!fileList.length) {
+        return
+    }
+    // 这个用来重新备份用的
+    // fileList.forEach(async excel => {
+    //     let table_data = read_xlsx_data(path.resolve(__dirname,'tiktok_data', excel))
+    //     const shop_name = path.parse(excel)?.name
+    //     let result_data = table_data.length ? table_data.filter(item => item['SKU货号']).map(item => ({
+    //         'platform_sku': item['SKU货号'],
+    //         'local_sku': item['SKU货号'],
+    //         'sale_volume_local': item['今日销量'],
+    //         'sale_volume_seven': item['近7日销量'],
+    //         'sale_volume_thirty': item['近30日销量'],
+    //         'shop_name': shop_name,
+    //         'platform': 'TikTok'
+    //     })) : []
+    //     // 写入数据库
+    //     if (result_data.length) {
+    //         const writeResp = await ManagerServices.addTikTokVolumeToOneSevenThirty(result_data)
+    //         if (writeResp !== 'tiktok销量写入成功') {
+    //             // 证明有毛病输出
+    //             console.log("tiktok数据写入数据库出现问题: ", writeResp)
+    //         } else {
+    //             console.log(writeResp)
+    //         }
+    //     }
+    // })
+}
+// saveTikTokData(path.resolve(__dirname,'tiktok_data'))
 app.listen('8889',() => {
     console.log('Server is running on port 8889');
 })
