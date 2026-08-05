@@ -2289,7 +2289,7 @@ app.post('/temu_file_page', async (req, res, next) => {
     }
 })
 
-function getAllDate(date = new Date()) {
+function getAllDate(date = new Date(2026, 7, 1)) {
     let year = date.getFullYear()
     let month = date.getMonth()
     let start_Time = new Date(year, month - 1, 1, 0, 0, 0)
@@ -2300,7 +2300,6 @@ function getAllDate(date = new Date()) {
     }
 }
 
-console.log(getAllDate().start_Time.getTime())
 // 用来先拉到整个月的数据
 app.post('/temu_file_click', async (req, res, next) => {
     try {
