@@ -471,6 +471,48 @@ let ip_poor = {
         clientId: 0
     }
 }
+
+/************************** 4. Excel工具函数 **************************/
+/**
+ * 读取Excel文件并转为JSON数组
+ * @param {string} filePath 文件路径
+ * @param {number} sheetIndex 要读取的sheet索引，默认0
+ * @returns {Array<Array>} 二维数组格式的Excel数据
+ */
+const readXlsx = (filePath, sheetIndex = 0) => {
+    try {
+      const dataBuffer = fs.readFileSync(filePath);
+      const workbook = xlsx.read(dataBuffer, { type: 'buffer' });
+      const sheetName = workbook.SheetNames[sheetIndex];
+      const worksheet = workbook.Sheets[sheetName];
+      return xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+    } catch (error) {
+      console.error(`读取Excel文件失败: ${filePath}`, error);
+      throw error;
+    }
+};
+
+/**
+ * 写入Excel文件
+ * @param {string} filePath 输出文件路径
+ * @param {Array<Object>} sheets 要写入的sheet数组，格式：{ name: string, data: Array<Array> }
+ */
+const writeXlsx = (filePath, sheets) => {
+    try {
+      const workbook = xlsx.utils.book_new();
+      sheets.forEach(sheet => {
+        const worksheet = xlsx.utils.aoa_to_sheet(sheet.data);
+        xlsx.utils.book_append_sheet(workbook, worksheet, sheet.name);
+      });
+      xlsx.writeFile(workbook, filePath);
+      console.log(`Excel文件写入成功: ${filePath}`);
+    } catch (error) {
+      console.error(`写入Excel文件失败: ${filePath}`, error);
+      throw error;
+    }
+}
+
+
 // 导出
 // let ali_wb = xlsx.utils.book_new()
 // let ali_ws = xlsx.utils.aoa_to_sheet(xlData)
@@ -1404,6 +1446,153 @@ app.post('/getGoodList', async function(req, res, next) {
     }
 })
 
+// 这个地方要读取所有的xlsx文件 然后进行返回
+app.post('/getTemuAllExcelData', async function(req, res, next) {
+    // 看下所有的xlsx文件内容
+    const { cookies, mallid, fileUrl } = req.body
+    if (!fileUrl.length) {
+        res.send({
+            code: 403,
+            msg: '传递的路径有误',
+            data: null
+        })
+        return
+    }
+    // 拿到这个地址下的所有要打印的excel表
+    for (let index = 0; index < fileUrl.length; index++) {
+        const TEMU_filePath = fileUrl[index];
+        const myHeader = new Headers()
+        myHeader.append('Content-Type', 'application/json')
+        myHeader.append('cookie', cookies[index])
+        myHeader.append('mallid', mallid)
+        // 读取
+        const table_data = readXlsx(TEMU_filePath)
+        const format_data = table_data.slice(1)
+        if (format_data.length) {
+            // 这个地方要判断下 要去请求哪一个
+            let areaTag = "", url = "";
+
+            // 判断路径包含关键字，打标签
+            if(TEMU_filePath.includes("美区")){
+                areaTag = "meiqu";
+            }else if(TEMU_filePath.includes("欧区")){
+                areaTag = "ouqu";
+            }else if(TEMU_filePath.includes("全球")){
+                areaTag = "quanqiu";
+            }
+            // 进行具体操作
+            switch(areaTag) {
+                case "meiqu":
+                    url = "https://agentseller-us.temu.com/kirogi/bg/mms/recentOrderList";
+                    break;
+                case "ouqu":
+                    url = "https://agentseller-eu.temu.com/kirogi/bg/mms/recentOrderList";
+                    break;
+                case "quanqiu":
+                    url = "https://agentseller.temu.com/kirogi/bg/mms/recentOrderList";
+                    break;
+                default:
+                    console.log("意料之外")
+            }
+            // 看看总共有多少条数据 要去请求几次
+            let need_num = Math.ceil(format_data.length / 100)
+            for (let getDataIndex = 0; getDataIndex < need_num; getDataIndex++) {
+                // 拿到数据
+                const packageList = format_data.slice(getDataIndex * 100, (getDataIndex + 1) * 100)
+                const packageSnList = packageList.map(item => item[0])
+                const resp = await axios({
+                    url,
+                    method: 'post',
+                    data: JSON.stringify({
+                        "fulfillmentMode": null,
+                        "pageNumber": 1,
+                        "pageSize": 100,
+                        "queryType": 0,
+                        "sortType": 1,
+                        "timeZone": "UTC+8",
+                        "packageSnList": packageSnList,
+                        "sellerNoteLabelList": []
+                    }),
+                    headers: myHeader
+                }).then(res => res.data)
+                if (resp.success) {
+                    // 这个是拿到的数据 可能我请求100 拿到的只有98
+                    let result = resp.result.pageItems
+                    // 拿到订单号 回填
+                    if (result.length) {
+                        // 去循环我刚才发送请求的100条消息
+                        packageList.forEach(order => {
+                            // 循环我的平台                       
+                            result.forEach(row => {
+                                row.orderList.forEach(list => {
+                                    // pk单
+                                    let orderPk = null;
+                                    try {
+                                        orderPk = list.orderPackageInfoList[0].packageSn
+                                    } catch (err) {
+                                        return
+                                    }
+                                    if (order[0] == orderPk) {
+                                        if (order.length == 10) {
+                                            return
+                                        }
+                                        order.push(row.parentOrderMap.parentOrderSn)
+                                    }
+                                })
+                            })
+                        })
+                    }
+                }
+                // 等待
+                await delayFn(2000)
+            }
+            // 搞定 保存下 添加一个名称
+            table_data[0][9] = "订单号"
+            // 这个地方再过一次
+            let need_again_list = table_data.filter(item => item.length < 10)
+            if (need_again_list.length) {
+                for (let index = 0; index < need_again_list.length; index++) {
+                    const element = need_again_list[index];
+                    // 挨个请求
+                    let again_resp = await axios({
+                        url,
+                        method: 'post',
+                        data: JSON.stringify({
+                            "fulfillmentMode": null,
+                            "pageNumber": 1,
+                            "pageSize": 100,
+                            "queryType": 0,
+                            "sortType": 1,
+                            "timeZone": "UTC+8",
+                            "packageSnList": [element[0]],
+                            "sellerNoteLabelList": []
+                        }),
+                        headers: myHeader
+                    }).then(res => res.data)
+                    if (again_resp.success) { 
+                        let result = again_resp.result.pageItems[0]
+                        // 拿到订单号 回填
+                        if (result.length) { 
+                            // 直接丢进去
+                            element.push(result.parentOrderMap.parentOrderSn)
+                        }
+                    }
+                    // 等待
+                    await delayFn(1500)
+                }
+            }
+            writeXlsx(TEMU_filePath, [{
+                name: "0",
+                data: table_data
+            }]);
+        }
+    }
+    res.send({
+        code: 200,
+        msg: '搞定'
+    })
+})
+
 app.post('/getGoodSize', async function(req, res, next) {
     const { cookie, mallid, data  } = req.body
     const myHeader = new Headers()
@@ -2257,7 +2446,17 @@ app.post('/temu_file_page', async (req, res, next) => {
 
             if (resp.success) {
                 const list = resp.result?.merchantMerchantFileExportHistoryList || []
-                const item = list[0]
+                // 判断下
+                let item = list.find(li => {
+                    let searchBeginTime = li.searchExportTimeBegin
+                    let searchEndTime = li.searchExportTimeEnd
+                    // 拿下
+                    const { start_Time, end_Time } = getAllDate()
+                    if (searchBeginTime == start_Time.getTime() && searchEndTime == end_Time.getTime()) {
+                        // 对味了
+                        return true
+                    }
+                })
 
                 if (
                     item?.id &&
@@ -2289,7 +2488,7 @@ app.post('/temu_file_page', async (req, res, next) => {
     }
 })
 
-function getAllDate(date = new Date(2026, 7, 1)) {
+function getAllDate(date = new Date()) {
     let year = date.getFullYear()
     let month = date.getMonth()
     let start_Time = new Date(year, month - 1, 1, 0, 0, 0)
@@ -2504,19 +2703,127 @@ function getTodayDate(d = new Date()) {
 }
 // 接收传递过来的文件
 app.post('/tiktok/download_file', tiktok_upload.single('file'), async (req, res, next) => {
-    console.log(req.file, '看看文件信息')
-    if (req.file.originalname.includes("日销量") || 
-        req.file.originalname.includes("周销量") ||
-        req.file.originalname.includes("月销量")) {
-        let table_data = read_xlsx_data(path.resolve(__dirname, 'tiktok_data', req.file.originalname))
-        res.send({
-            code: 200,
-            msg: '上传成功'
-        })
-    } else {
+    try {
+        if (!req.file) {
+            return res.status(400).send({
+                code: 400,
+                msg: '没有接收到文件'
+            })
+        }
+
+        console.log(req.file, '看看文件信息')
+
+        const filePath = path.resolve(__dirname, req.file.destination, req.file.filename)
+        const originalName = req.file.originalname || req.file.filename
+        const rawShopName = path.parse(req.file.filename)?.name || ''
+        const isAliexpressVolumeFile = originalName.includes("日销量") ||
+            originalName.includes("周销量") ||
+            originalName.includes("月销量")
+
+        if (isAliexpressVolumeFile) {
+            const saleType = originalName.includes("日销量")
+                ? "day"
+                : originalName.includes("周销量")
+                    ? "seven"
+                    : "thirty"
+
+            const saleFieldMap = {
+                day: "sale_volume_local",
+                seven: "sale_volume_seven",
+                thirty: "sale_volume_thirty"
+            }
+            const saleColumnMap = {
+                day: "今日销量",
+                seven: "近7日销量",
+                thirty: "近30日销量"
+            }
+            const saleField = saleFieldMap[saleType]
+            const saleColumn = saleColumnMap[saleType]
+            const shop_name = rawShopName.replace(/[-_\s]*(日销量|周销量|月销量)$/u, '')
+
+            const mappingRows = await ManagerServices.getSkuMappingData({
+                keyword: "Aliexpress"
+            })
+
+            if (mappingRows instanceof Error) {
+                throw mappingRows
+            }
+
+            if (!mappingRows.length) {
+                return res.status(404).send({
+                    code: 404,
+                    msg: "上传成功，但是没有查到速卖通SKU映射，录入数据库失败"
+                })
+            }
+
+            const skuMap = new Map(
+                mappingRows
+                    .filter(item => item.platform_sku_id)
+                    .map(item => [
+                        String(item.platform_sku_id).trim(),
+                        item
+                    ])
+            )
+
+            const table_data = read_xlsx_data(filePath, "sku明细")
+            const result_data = Array.isArray(table_data)
+                ? table_data
+                    .map(item => {
+                        const keys = Object.keys(item)
+                        const lastKey = keys[keys.length - 1]
+                        const skuId = String(item["SKU ID"] || item["skuId"] || item["sku_id"] || "").trim()
+                        const rawSaleNum = item[saleColumn] ?? item[lastKey]
+
+                        if (!skuId || rawSaleNum === "-" || rawSaleNum === undefined || rawSaleNum === null || rawSaleNum === "") {
+                            return null
+                        }
+
+                        const saleNum = Number(String(rawSaleNum).replace(/,/g, '').trim())
+                        const skuMapping = skuMap.get(skuId)
+
+                        return {
+                            platform_sku: skuMapping?.platform_sku || skuId,
+                            local_sku: skuMapping?.dianxiaomi_sku || "error_sku",
+                            [saleField]: Number.isFinite(saleNum) ? saleNum : 0,
+                            shop_name,
+                            platform: '速卖通',
+                            product_skc: item['SKC'],
+                            product_sku: item['SKU'],
+                            product_spu: item['SPU'],
+                            data_time: getTodayDate()
+                        }
+                    })
+                    .filter(Boolean)
+                : []
+
+            if (!result_data.length) {
+                return res.send({
+                    code: 201,
+                    msg: "文件已收到，但没有读取到可写入的数据"
+                })
+            }
+
+            const writeResp = await ManagerServices.addAliexpressVolumePartial(result_data, saleField)
+
+            if (writeResp !== "销量写入成功") {
+                console.log("速卖通销量写入数据库出现问题: ", writeResp)
+                return res.send({
+                    code: 201,
+                    msg: "文件已保存本地，但数据库持久化失败，请稍后再试"
+                })
+            }
+
+            return res.send({
+                code: 200,
+                msg: "数据库持久化成功",
+                type: saleType,
+                count: result_data.length
+            })
+        }
+
         // 收到文件之后 就直接丢到数据库里面去
-        let table_data = read_xlsx_data(path.resolve(__dirname, req.file.destination, req.file.filename))
-        const shop_name = path.parse(req.file.filename)?.name
+        let table_data = read_xlsx_data(filePath)
+        const shop_name = rawShopName
         let result_data = table_data.length ? table_data.filter(item => item['SKU货号']).map(item => ({
             'platform_sku': item['SKU货号'],
             'local_sku': item['SKU货号'],
@@ -2536,20 +2843,31 @@ app.post('/tiktok/download_file', tiktok_upload.single('file'), async (req, res,
             if (writeResp !== 'tiktok销量写入成功') {
                 // 证明有毛病输出
                 console.log("tiktok数据写入数据库出现问题: ", writeResp)
-                res.send({
+                return res.send({
                     code: 200,
                     msg: '文件已保存本地,但数据库持久化失败,请稍后再试'
                 })
-            } else {
-                console.log(writeResp)
-                res.send({
-                    code: 200,
-                    msg: '数据库持久化成功'
-                })
             }
+
+            console.log(writeResp)
+            return res.send({
+                code: 200,
+                msg: '数据库持久化成功'
+            })
         }
+
+        return res.send({
+            code: 201,
+            msg: '文件已收到，但没有读取到可写入的数据'
+        })
+    } catch (err) {
+        console.error('/tiktok/download_file 出错:', err)
+        return res.status(500).send({
+            code: 500,
+            msg: '服务器处理文件失败',
+            error: err.message || String(err)
+        })
     }
-    
 })
 
 app.use(['/dianxiaomi/list', '/sku-mappings'], requireDatabaseAccess)
@@ -2885,12 +3203,12 @@ app.delete('/sku-mappings/:id', async (req, res, next) => {
     }
 })
 
-function read_xlsx_data (filePath) {
+function read_xlsx_data (filePath, sheetName) {
     if (!filePath) {
-        return "路径不能为空"
+        return []
     }
     const wookbook = xlsx.readFile(filePath)
-    const sheetname = wookbook.SheetNames[0]
+    const sheetname = sheetName && wookbook.Sheets[sheetName] ? sheetName : wookbook.SheetNames[0]
     // 拿到内容
     const worksheet = wookbook.Sheets[sheetname]
     // 转json
@@ -3071,46 +3389,6 @@ const localStorage_JSONFile = (filePath, saveObject) => {
     }
     console.log(saveObject)
     return fs.writeFileSync(filePath, JSON.stringify(saveObject))
-}
-
-/************************** 4. Excel工具函数 **************************/
-/**
- * 读取Excel文件并转为JSON数组
- * @param {string} filePath 文件路径
- * @param {number} sheetIndex 要读取的sheet索引，默认0
- * @returns {Array<Array>} 二维数组格式的Excel数据
- */
-const readXlsx = (filePath, sheetIndex = 0) => {
-    try {
-      const dataBuffer = fs.readFileSync(filePath);
-      const workbook = xlsx.read(dataBuffer, { type: 'buffer' });
-      const sheetName = workbook.SheetNames[sheetIndex];
-      const worksheet = workbook.Sheets[sheetName];
-      return xlsx.utils.sheet_to_json(worksheet, { header: 1 });
-    } catch (error) {
-      console.error(`读取Excel文件失败: ${filePath}`, error);
-      throw error;
-    }
-};
-
-/**
- * 写入Excel文件
- * @param {string} filePath 输出文件路径
- * @param {Array<Object>} sheets 要写入的sheet数组，格式：{ name: string, data: Array<Array> }
- */
-const writeXlsx = (filePath, sheets) => {
-    try {
-      const workbook = xlsx.utils.book_new();
-      sheets.forEach(sheet => {
-        const worksheet = xlsx.utils.aoa_to_sheet(sheet.data);
-        xlsx.utils.book_append_sheet(workbook, worksheet, sheet.name);
-      });
-      xlsx.writeFile(workbook, filePath);
-      console.log(`Excel文件写入成功: ${filePath}`);
-    } catch (error) {
-      console.error(`写入Excel文件失败: ${filePath}`, error);
-      throw error;
-    }
 }
 
 /************************** 5. HTTP请求工具函数 **************************/

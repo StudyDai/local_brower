@@ -62,6 +62,55 @@ exports.addTikTokVolumeToOneSevenThirty = async function (data) {
     }
 }
 
+exports.addAliexpressVolumePartial = async function (data, saleField) {
+    const allowFields = [
+        "sale_volume_local",
+        "sale_volume_seven",
+        "sale_volume_thirty"
+    ]
+
+    try {
+        if (!allowFields.includes(saleField)) {
+            return new Error(`销量字段不合法: ${saleField}`)
+        }
+
+        if (!Array.isArray(data) || !data.length) {
+            return "没有可写入的销量数据"
+        }
+
+        const insertData = data.map(item => ({
+            platform_sku: String(item.platform_sku || "").trim(),
+            local_sku: String(item.local_sku || FALLBACK_LOCAL_SKU).trim(),
+            sale_volume_local: Number(item.sale_volume_local || 0),
+            sale_volume_seven: Number(item.sale_volume_seven || 0),
+            sale_volume_thirty: Number(item.sale_volume_thirty || 0),
+            shop_name: item.shop_name,
+            platform: item.platform || "速卖通",
+            product_skc: item.product_skc,
+            product_sku: item.product_sku,
+            product_spu: item.product_spu,
+            data_time: item.data_time,
+            [saleField]: Number(item[saleField] || 0)
+        }))
+
+        await saleVolume.bulkCreate(insertData, {
+            chunkSize: 1000,
+            updateOnDuplicate: [
+                "platform_sku",
+                "local_sku",
+                "product_skc",
+                "product_sku",
+                "product_spu",
+                saleField
+            ]
+        })
+
+        return "销量写入成功"
+    } catch (err) {
+        return err
+    }
+}
+
 // 写店小秘数据
 exports.addDianxiaomiStock = async function (data) {
     try {
