@@ -479,13 +479,13 @@ let ip_poor = {
  * @param {number} sheetIndex 要读取的sheet索引，默认0
  * @returns {Array<Array>} 二维数组格式的Excel数据
  */
-const readXlsx = (filePath, sheetIndex = 0) => {
+const readXlsx = (filePath, sheetIndex = 0, header = 1) => {
     try {
       const dataBuffer = fs.readFileSync(filePath);
       const workbook = xlsx.read(dataBuffer, { type: 'buffer' });
       const sheetName = workbook.SheetNames[sheetIndex];
       const worksheet = workbook.Sheets[sheetName];
-      return xlsx.utils.sheet_to_json(worksheet, { header: 1 });
+      return xlsx.utils.sheet_to_json(worksheet, { header });
     } catch (error) {
       console.error(`读取Excel文件失败: ${filePath}`, error);
       throw error;
@@ -1572,7 +1572,7 @@ app.post('/getTemuAllExcelData', async function(req, res, next) {
                     if (again_resp.success) { 
                         let result = again_resp.result.pageItems[0]
                         // 拿到订单号 回填
-                        if (result.length) { 
+                        if (result.orderList.length) { 
                             // 直接丢进去
                             element.push(result.parentOrderMap.parentOrderSn)
                         }
@@ -1590,6 +1590,17 @@ app.post('/getTemuAllExcelData', async function(req, res, next) {
     res.send({
         code: 200,
         msg: '搞定'
+    })
+})
+
+app.get('/jijiaData/:filename', async function (req, res, next) {
+    let { filename } = req.params
+    // 读取文件
+    let basePath = "C:\\Users\\Administrator\\Downloads"
+    const jsondata = readXlsx(basePath + '\\' + filename + '.xlsx', 0, 1)
+    res.send({
+        code: 200,
+        data: jsondata.slice(6)
     })
 })
 

@@ -324,7 +324,7 @@ if __name__ == '__main__':
     # 自动选择速卖通海关信息
     # 速卖通自动给客户发消息
     # file = 'aliexpress_msg.xls'
-    file = get_resource_path('temu_auto.xls')
+    file = get_resource_path('temu_auto copy.xls')
     #打开文件
     wb = xlrd.open_workbook(filename=file)
     #通过索引获取表格sheet页
@@ -346,12 +346,6 @@ if __name__ == '__main__':
             print('正要发单ing~')
             k = 1
             while k <= 16:
-                # 读取第二个文件
-                if k >= 2:
-                    file = 'ticket.xls'
-                    wb = xlrd.open_workbook(filename=file)
-                    sheet1 = wb.sheet_by_index(0)
-                k += 1
                 mainWork(sheet1) 
         elif key == '3':
             alreadyGo = False
