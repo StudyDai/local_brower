@@ -56,7 +56,11 @@ function createIMAPAccount(secretKey, config) {
             ...config,
             connTimeout: 30000,
             authTimeout: 30000,
-            keepalive: true
+            keepalive: {
+                interval: 30000, // 30s发一次心跳
+                idleInterval: 60000,
+                forceNoop: true
+            }
         });
 
         let isFetching = false;
@@ -1570,9 +1574,9 @@ app.post('/getTemuAllExcelData', async function(req, res, next) {
                         headers: myHeader
                     }).then(res => res.data)
                     if (again_resp.success) { 
-                        let result = again_resp.result.pageItems[0]
+                        let result = again_resp?.result?.pageItems[0]
                         // 拿到订单号 回填
-                        if (result.orderList.length) { 
+                        if (result?.orderList?.length) { 
                             // 直接丢进去
                             element.push(result.parentOrderMap.parentOrderSn)
                         }
